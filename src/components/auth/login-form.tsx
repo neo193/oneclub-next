@@ -22,7 +22,9 @@ export function LoginForm({ nextPath, initialMessage = "" }: { nextPath: string;
       const { data: profile } = await supabase.from("profiles").select("app_role").eq("id", data.user.id).single();
       if (profile && ["staff", "admin"].includes(profile.app_role)) destination = "/staff";
     }
-    router.replace(destination); router.refresh();
+    // Do not immediately refresh here: it can race router.replace and reload
+    // the login page before the protected navigation completes.
+    router.replace(destination);
   }
 
   return <form className="contact-form auth-form" onSubmit={submit}><div className="form-heading"><span>Secure login</span><h3>Access your account.</h3></div><label>Email Address<input type="email" name="email" autoComplete="email" required /></label><label>Password<input type="password" name="password" autoComplete="current-password" required minLength={8} /></label><p className="auth-helper"><Link href="/forgot-password">Forgot password?</Link></p><button className="button button-primary" type="submit" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</button><p className="form-message" aria-live="polite">{message}</p><p className="privacy-note">New member accounts can only be created from a valid invitation link.</p></form>;
