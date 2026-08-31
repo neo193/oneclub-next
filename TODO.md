@@ -2,7 +2,7 @@
 
 ## Framework migration
 
-- Migrate the shared public shell and public content pages.
+- [x] Migrate the shared public shell and public content pages.
 - Migrate authentication, password recovery and invite flows.
 - Migrate the member portal and member-only pages.
 - Migrate staff and administrator workspaces.

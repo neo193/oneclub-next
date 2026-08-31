@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import { ContentGrid, ContentPanel } from "@/components/public/content-panel";
+import { PageHero } from "@/components/public/page-hero";
+
+export const metadata: Metadata = { title: "Partners", description: "Discover One Club partner categories and member privileges." };
+export default function PartnersPage() { return <><PageHero eyebrow="Curated access" title={<>Privileges across <em>lifestyle.</em></>}><p>A growing network across hospitality, wellness, travel and premium lifestyle services. Active members can explore participating partners, exact privileges and redemption instructions through their secure account.</p></PageHero><ContentGrid><ContentPanel><h3>Hotels & Resorts</h3><p>Preferred rates, attentive service, early check-in or late checkout where available.</p></ContentPanel><ContentPanel><h3>Wellness</h3><p>Selected gyms, spas and salons with member-only pricing and privileges.</p></ContentPanel><ContentPanel><h3>Adventure Stays</h3><p>Distinctive escapes and experiences across Bangalore and Karnataka.</p></ContentPanel><ContentPanel><h3>Automotive & Travel</h3><p>Car-detailing studios, holiday planners and other premium lifestyle services.</p></ContentPanel><ContentPanel wide><h2>Member privacy</h2><p>Members identify themselves directly to participating partners using their active One Club membership details. Each privilege remains subject to the partner&apos;s individual terms.</p></ContentPanel></ContentGrid></>; }
+

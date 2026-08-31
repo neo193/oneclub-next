@@ -1,0 +1,8 @@
+import type { Metadata } from "next";
+import { ContentGrid, ContentPanel } from "@/components/public/content-panel";
+import { PageHero } from "@/components/public/page-hero";
+import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = { title: "Benefits", description: "Explore thoughtfully selected One Club member privileges and experiences." };
+export default function BenefitsPage() { return <><PageHero eyebrow="The member experience" title={<>Benefits designed to feel <em>considered.</em></>}><p>One Club privileges are selected to make everyday experiences feel more rewarding. Active members receive the complete partner catalogue, benefit terms and redemption details through their secure account.</p></PageHero><ContentGrid><ContentPanel><h2>Preferred rates</h2><p>Typically 10–15% member discounts across selected hospitality, wellness, automotive and lifestyle partners.</p></ContentPanel><ContentPanel><h2>Attentive service</h2><p>A more considered experience and enhanced attention at participating partner properties.</p></ContentPanel><ContentPanel><h2>Flexible privileges</h2><p>Early check-in, late checkout, preferred booking opportunities or service-specific flexibility where available.</p></ContentPanel><ContentPanel><h2>Curated access</h2><p>Discover a growing selection of trusted places and experiences chosen for the One Club community.</p></ContentPanel><ContentPanel wide><h2>How members redeem</h2><p>Members present their active One Club membership details directly to a participating partner, who confirms the applicable privilege and its terms.</p><Button href="/contact" variant="primary">Request an Enquiry</Button></ContentPanel></ContentGrid></>; }
+

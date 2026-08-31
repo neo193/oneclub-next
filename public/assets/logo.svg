@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 120" role="img">
+  <g fill="none" stroke="#eee8dc" stroke-width="4">
+    <circle cx="91" cy="43" r="32"/>
+    <circle cx="121" cy="43" r="32"/>
+  </g>
+  <path d="M105 14 C88 26 88 60 105 72 C122 60 122 26 105 14Z" fill="none" stroke="#b99a62" stroke-width="3"/>
+  <text x="105" y="101" text-anchor="middle" fill="#eee8dc" font-family="Georgia,serif" font-size="16" letter-spacing="6">ONE CLUB</text>
+</svg>
