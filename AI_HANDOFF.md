@@ -104,6 +104,19 @@ npm run build
 
 The development URL is normally `http://localhost:3000`.
 
+### Current Codex runtime caveat
+
+In the present desktop runtime, the global `npm` command may fail because its shim points to a removed `%APPDATA%\npm\node_modules\npm\bin\npm-cli.js`. This is a host PATH/shim issue, not a project issue. The installed project tools work directly:
+
+```text
+.\node_modules\.bin\tsc.cmd --noEmit
+.\node_modules\.bin\eslint.cmd .
+node node_modules/next/dist/bin/next dev
+node node_modules/next/dist/bin/next build --webpack
+```
+
+Use those commands when necessary; do not modify application code to compensate for the global npm shim.
+
 ## Required manual regression tests
 
 - Authenticate as a member, general staff, marketing staff, technical staff and administrator where test accounts are available.
