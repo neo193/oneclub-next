@@ -4,7 +4,7 @@
 
 - [x] Migrate the shared public shell and public content pages.
 - [x] Migrate authentication, password recovery and invite flows.
-- Migrate the member portal and member-only pages.
+- [x] Migrate the member portal and member-only pages (Home, Benefits, Events, Profile, Support).
 - Migrate staff and administrator workspaces.
 - Generate strict database types from the Supabase project before migrating data-heavy pages.
 - Complete route-level authorization and production deployment configuration.

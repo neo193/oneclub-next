@@ -5,8 +5,9 @@ import { requireProfile } from "@/lib/auth/profile";
 
 const navigation = [
   { href: "/portal", label: "My Portal" },
-  { href: "/portal/events", label: "Events" },
   { href: "/portal/benefits", label: "Benefits" },
+  { href: "/portal/events", label: "Events" },
+  { href: "/portal/profile", label: "Profile" },
   { href: "/portal/support", label: "Support" },
 ];
 
