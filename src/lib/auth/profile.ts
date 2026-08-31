@@ -12,7 +12,15 @@ export async function getAuthenticatedProfile(): Promise<Profile | null> {
   if (claimsError || !subject) return null;
 
   const { data, error } = await supabase.from("profiles").select("*").eq("id", subject).single();
-  if (error || !data) return null;
+  if (error) {
+    console.error("Authenticated profile lookup failed", {
+      code: error.code,
+      message: error.message,
+      subject,
+    });
+    return null;
+  }
+  if (!data) return null;
   return data;
 }
 

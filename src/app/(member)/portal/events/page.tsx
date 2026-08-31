@@ -11,7 +11,16 @@ export const metadata: Metadata = {
 };
 
 export default async function MemberEventsPage() {
-  await requireProfile("/portal/events");
+  const profile = await requireProfile("/portal/events");
+  if (profile.membership_state !== "active") {
+    return (
+      <section className="section member-page">
+        <p className="eyebrow"><span />PRIVATE EXPERIENCES</p>
+        <h1>Member Events</h1>
+        <p className="access-message">An active membership is required to view events and make bookings. Visit My Portal for information about your membership status.</p>
+      </section>
+    );
+  }
   const supabase = await createClient();
 
   const [eventsRes, bookingsRes] = await Promise.all([
@@ -19,8 +28,9 @@ export default async function MemberEventsPage() {
     supabase.rpc("get_my_event_bookings"),
   ]);
 
-  const events: MemberEvent[] = eventsRes.error || !eventsRes.data ? [] : eventsRes.data;
-  const bookings: MyEventBooking[] = bookingsRes.error || !bookingsRes.data ? [] : bookingsRes.data;
+  const events: MemberEvent[] = eventsRes.data || [];
+  const bookings: MyEventBooking[] = bookingsRes.data || [];
+  const initialError = eventsRes.error?.message || bookingsRes.error?.message || "";
 
   return (
     <section className="section member-page">
@@ -33,7 +43,7 @@ export default async function MemberEventsPage() {
         Reserve member and guest places for curated business meets, founder breakfasts, and exclusive community gatherings.
       </p>
 
-      <EventBookingView initialEvents={events} initialBookings={bookings} />
+      <EventBookingView initialEvents={events} initialBookings={bookings} initialError={initialError} />
     </section>
   );
 }

@@ -5,8 +5,16 @@
 - [x] Migrate the shared public shell and public content pages.
 - [x] Migrate authentication, password recovery and invite flows.
 - [x] Migrate the member portal and member-only pages (Home, Benefits, Events, Profile, Support).
-- Migrate staff and administrator workspaces.
-- Generate strict database types from the Supabase project before migrating data-heavy pages.
+- Migrate staff and administrator workspaces, excluding reservation operations:
+  - [x] Shared role-aware staff shell and overview
+  - [x] Invitations and enquiry approvals
+  - [ ] Member administration
+  - [x] Support operations
+  - [ ] Partner, benefit and property management
+  - [ ] Event management and complimentary bookings
+  - [x] Administrator refunds and technical diagnostics
+- [x] Synchronize the member-stage database contracts with the deployed schema fields used by the application.
+- Generate a complete Supabase CLI type export before migrating data-heavy staff pages (requires a linked CLI session).
 - Complete route-level authorization and production deployment configuration.
 
 ## Partner reservations
@@ -41,7 +49,8 @@ those workflows before continuing with the stages below.
 ## Launch readiness
 
 - Add the existing membership-invitation validation and acceptance RPCs to the versioned migration history.
-- Convert prototype database changes into repeatable, versioned migrations.
+- [x] Bring the existing migration and Razorpay Edge Function history into this repository.
+- Export the pre-migration prototype baseline RPCs listed in `supabase/README.md` from the hosted project.
 - Separate demonstration data from production-ready records.
 - Rehearse backup, restore, rollback and clean-staging deployment procedures.
 - Prepare production secrets and service configuration without committing credentials.

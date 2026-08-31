@@ -1,0 +1,2 @@
+-- Authoritative project copy is identical to outputs/OneClub_Supabase_Stage4_Invitations_Migration.sql.
+-- Kept as a migration marker until CLI-driven migration management is available.

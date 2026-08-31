@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { reconcilePayment, startRazorpayPayment } from "@/lib/payments/razorpay";
 import type { MemberEvent, MyEventBooking } from "@/types/database";
 
 function formatRupees(paise: number) {
@@ -28,16 +30,21 @@ function formatDate(iso: string) {
 export function EventBookingView({
   initialEvents = [],
   initialBookings = [],
+  initialError = "",
 }: {
   initialEvents: MemberEvent[];
   initialBookings: MyEventBooking[];
+  initialError?: string;
 }) {
   const router = useRouter();
   const [events, setEvents] = useState<MemberEvent[]>(initialEvents);
   const [bookings, setBookings] = useState<MyEventBooking[]>(initialBookings);
   const [activeTab, setActiveTab] = useState<"confirmed" | "pending_payment" | "cancelled">("confirmed");
-  const [message, setMessage] = useState<string>("");
+  const [message, setMessage] = useState<string>(initialError);
   const [actionPending, setActionPending] = useState<boolean>(false);
+  const [cancelTarget, setCancelTarget] = useState<MyEventBooking | null>(null);
+  const [bookingPage, setBookingPage] = useState(1);
+  const pageSize = 5;
 
   // Per-event guest state tracker: map of eventId -> array of guest names
   const [guestInputs, setGuestInputs] = useState<Record<string, string[]>>({});
@@ -48,8 +55,10 @@ export function EventBookingView({
       supabase.rpc("get_member_events"),
       supabase.rpc("get_my_event_bookings"),
     ]);
-    if (eventsRes.data) setEvents(eventsRes.data);
-    if (bookingsRes.data) setBookings(bookingsRes.data);
+    if (eventsRes.error) throw new Error(eventsRes.error.message);
+    if (bookingsRes.error) throw new Error(bookingsRes.error.message);
+    setEvents(eventsRes.data || []);
+    setBookings(bookingsRes.data || []);
     router.refresh();
   }
 
@@ -110,7 +119,6 @@ export function EventBookingView({
   }
 
   async function handleCancelBooking(bookingId: string) {
-    if (!confirm("Are you sure you want to cancel this booking?")) return;
     setActionPending(true);
     setMessage("Processing booking cancellation…");
 
@@ -128,12 +136,58 @@ export function EventBookingView({
           : "Booking cancelled successfully."
       );
       await reloadData();
+      setCancelTarget(null);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Failed to cancel booking.");
     } finally {
       setActionPending(false);
     }
   }
+
+  async function handlePayment(booking: MyEventBooking) {
+    setActionPending(true);
+    try {
+      const completed = await startRazorpayPayment({
+        purpose: "event",
+        bookingId: booking.booking_id,
+        onStatus: setMessage,
+      });
+      if (completed) {
+        await reloadData();
+        setActiveTab("confirmed");
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "We could not complete the payment.");
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    async function recoverAndExpire() {
+      try {
+        for (const booking of initialBookings) {
+          if (booking.status === "pending_payment" && await reconcilePayment("event", booking.booking_id)) {
+            if (active) setMessage("A captured event payment was recovered and confirmed.");
+            break;
+          }
+        }
+        const supabase = createClient();
+        const { data, error } = await supabase.rpc("expire_my_event_reservations");
+        if (error) throw new Error(error.message);
+        if (active && (data || initialBookings.some((item) => item.status === "pending_payment"))) {
+          await reloadData();
+        }
+      } catch (error) {
+        if (active) setMessage(error instanceof Error ? error.message : "Bookings could not be refreshed.");
+      }
+    }
+    void recoverAndExpire();
+    return () => { active = false; };
+    // Initial reconciliation should run once when the page mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filtered bookings
   const confirmedBookings = bookings.filter((b) => b.status === "confirmed");
@@ -146,6 +200,16 @@ export function EventBookingView({
       : activeTab === "pending_payment"
       ? pendingBookings
       : cancelledBookings;
+  const bookingPages = Math.max(1, Math.ceil(visibleBookings.length / pageSize));
+  const pagedBookings = useMemo(
+    () => visibleBookings.slice((bookingPage - 1) * pageSize, bookingPage * pageSize),
+    [visibleBookings, bookingPage]
+  );
+
+  function selectTab(tab: "confirmed" | "pending_payment" | "cancelled") {
+    setActiveTab(tab);
+    setBookingPage(1);
+  }
 
   return (
     <div>
@@ -288,21 +352,21 @@ export function EventBookingView({
             <button
               className={`booking-filter ${activeTab === "confirmed" ? "active" : ""}`}
               type="button"
-              onClick={() => setActiveTab("confirmed")}
+              onClick={() => selectTab("confirmed")}
             >
               Confirmed ({confirmedBookings.length})
             </button>
             <button
               className={`booking-filter ${activeTab === "pending_payment" ? "active" : ""}`}
               type="button"
-              onClick={() => setActiveTab("pending_payment")}
+              onClick={() => selectTab("pending_payment")}
             >
               Pending ({pendingBookings.length})
             </button>
             <button
               className={`booking-filter ${activeTab === "cancelled" ? "active" : ""}`}
               type="button"
-              onClick={() => setActiveTab("cancelled")}
+              onClick={() => selectTab("cancelled")}
             >
               Cancelled ({cancelledBookings.length})
             </button>
@@ -314,7 +378,7 @@ export function EventBookingView({
                 No {activeTab.replace("_", " ")} bookings.
               </p>
             ) : (
-              visibleBookings.map((booking) => (
+              pagedBookings.map((booking) => (
                 <article className="my-booking-card" key={booking.booking_id}>
                   <h3>{booking.title}</h3>
                   <p>
@@ -326,27 +390,50 @@ export function EventBookingView({
                       Guests: {booking.guest_names.join(", ")}
                     </p>
                   )}
-                  <span className="status-pill">
-                    {booking.status.replace("_", " ")} · {booking.payment_status.replace("_", " ")}
-                  </span>
-
-                  {booking.can_cancel && (
-                    <button
-                      className="text-button danger-text"
-                      type="button"
-                      disabled={actionPending}
-                      onClick={() => handleCancelBooking(booking.booking_id)}
-                      style={{ marginTop: "12px" }}
-                    >
-                      Cancel booking
+                  <div className="booking-card-footer">
+                    <span className="status-pill">
+                      {booking.booking_source === "complimentary"
+                        ? `${booking.status.replace("_", " ")} · Complimentary`
+                        : `${booking.status.replace("_", " ")} · ${booking.payment_status.replace("_", " ")}`}
+                    </span>
+                    {booking.can_cancel && (
+                      <div className="booking-card-actions">
+                        <button className="text-button danger-text" type="button" disabled={actionPending} onClick={() => setCancelTarget(booking)}>
+                          Cancel booking
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {booking.status === "pending_payment" && booking.booking_source === "member_payment" &&
+                    booking.reservation_expires_at && new Date(booking.reservation_expires_at) > new Date() && (
+                    <button className="button button-primary booking-pay" type="button" disabled={actionPending} onClick={() => handlePayment(booking)}>
+                      Pay {formatRupees(booking.amount_paise)}
                     </button>
                   )}
                 </article>
               ))
             )}
           </div>
+          {bookingPages > 1 && (
+            <nav className="booking-pagination" aria-label="Booking pages">
+              <button className="text-button" type="button" disabled={bookingPage === 1} onClick={() => setBookingPage((page) => page - 1)}>Previous</button>
+              <span>Page {bookingPage} of {bookingPages}</span>
+              <button className="text-button" type="button" disabled={bookingPage === bookingPages} onClick={() => setBookingPage((page) => page + 1)}>Next</button>
+            </nav>
+          )}
         </aside>
       </div>
+      <ConfirmationDialog
+        open={Boolean(cancelTarget)}
+        title="Cancel this event booking?"
+        confirmLabel="Cancel booking"
+        pending={actionPending}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={() => cancelTarget && handleCancelBooking(cancelTarget.booking_id)}
+      >
+        <p>{cancelTarget?.title}</p>
+        <p>A paid booking may require an administrator to process its refund. This action cannot be reversed from the member portal.</p>
+      </ConfirmationDialog>
     </div>
   );
 }

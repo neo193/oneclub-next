@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import "./member.css";
 import { AppShell } from "@/components/layout/app-shell";
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth/profile";

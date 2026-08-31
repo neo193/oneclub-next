@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberCard } from "@/components/member/member-card";
+import { MembershipPayment } from "@/components/member/membership-payment";
 import { requireProfile } from "@/lib/auth/profile";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Member Portal",
@@ -12,9 +14,15 @@ export const metadata: Metadata = {
 
 export default async function MemberPortalPage() {
   const profile = await requireProfile("/portal");
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const email = String(claimsData?.claims?.email || "");
   const isActive = profile.membership_state === "active";
   const isPaymentPending = profile.membership_state === "payment_pending";
   const isSuspended = profile.membership_state === "suspended";
+  const isInactive = ["none", "expired", "cancelled"].includes(profile.membership_state);
+  const pendingPlan = profile.pending_membership_plan || (profile.founding_member_sequence ? "founding_lifetime" : "annual");
+  const pendingPlanName = pendingPlan === "founding_lifetime" ? "Founding Membership" : "annual membership";
 
   return (
     <div className="section-shell">
@@ -79,18 +87,17 @@ export default async function MemberPortalPage() {
           <section className="portal-view">
             <h2>Membership payment pending</h2>
             <p>
-              Your Founding Membership invitation offer has been approved. Complete your ₹50,000 membership fee to activate your lifetime membership benefits.
+              Your {pendingPlanName} offer is ready. Complete the membership payment to activate your benefits.
               {profile.payment_offer_expires_at && (
                 <> Offer valid until <strong>{new Date(profile.payment_offer_expires_at).toLocaleDateString()}</strong>.</>
               )}
             </p>
             <div className="portal-actions">
-              <Button href="/portal/support?category=payment" variant="primary">
-                Contact membership desk
-              </Button>
+              <MembershipPayment email={email} />
               <Button href="/portal/profile" variant="secondary">
                 Edit my profile
               </Button>
+              <Button href="/portal/support?category=payment" variant="secondary">Contact membership desk</Button>
             </div>
           </section>
         )}
@@ -105,6 +112,23 @@ export default async function MemberPortalPage() {
               <Button href="/portal/support?category=membership_access" variant="primary">
                 Contact Member Support
               </Button>
+            </div>
+          </section>
+        )}
+
+        {isInactive && (
+          <section className="portal-view">
+            <h2>{profile.membership_state === "expired" ? "Membership expired" : "Membership inactive"}</h2>
+            <p>
+              {profile.membership_state === "expired"
+                ? "Your previous membership term has ended. Please contact One Club if you would like to renew or discuss your membership options."
+                : profile.membership_state === "cancelled"
+                  ? "This membership is no longer active. Please contact One Club if you would like assistance with restoring access."
+                  : "Your account does not currently have an active membership. Please contact One Club for assistance."}
+            </p>
+            <div className="portal-actions">
+              <Button href="/portal/support?category=membership_access" variant="primary">Contact Member Support</Button>
+              <Button href="/portal/profile" variant="secondary">View my profile</Button>
             </div>
           </section>
         )}

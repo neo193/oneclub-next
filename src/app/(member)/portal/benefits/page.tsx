@@ -11,11 +11,20 @@ export const metadata: Metadata = {
 };
 
 export default async function MemberBenefitsPage() {
-  await requireProfile("/portal/benefits");
+  const profile = await requireProfile("/portal/benefits");
+  if (profile.membership_state !== "active") {
+    return (
+      <section className="section member-page">
+        <p className="eyebrow"><span />MEMBER-ONLY PRIVILEGES</p>
+        <h1>Member Benefits</h1>
+        <p className="access-message">An active membership is required to access partner privileges. Visit My Portal for information about your membership status.</p>
+      </section>
+    );
+  }
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_active_member_benefits");
-  const benefits: MemberBenefit[] = error || !data ? [] : data;
+  const benefits: MemberBenefit[] = data || [];
 
   return (
     <section className="section member-page">
@@ -28,7 +37,11 @@ export default async function MemberBenefitsPage() {
         A private catalogue of privileges curated exclusively for active One Club members across hospitality, wellness, lifestyle, and automotive partners.
       </p>
 
-      <BenefitsCatalogue benefits={benefits} />
+      {error ? (
+        <p className="access-message" role="alert">We could not load member benefits. Please refresh the page or contact Member Support if the problem continues. Technical detail: {error.message}</p>
+      ) : (
+        <BenefitsCatalogue benefits={benefits} />
+      )}
     </section>
   );
 }
