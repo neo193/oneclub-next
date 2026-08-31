@@ -3,7 +3,7 @@
 ## Framework migration
 
 - [x] Migrate the shared public shell and public content pages.
-- Migrate authentication, password recovery and invite flows.
+- [x] Migrate authentication, password recovery and invite flows.
 - Migrate the member portal and member-only pages.
 - Migrate staff and administrator workspaces.
 - Generate strict database types from the Supabase project before migrating data-heavy pages.
@@ -40,9 +40,9 @@ those workflows before continuing with the stages below.
 
 ## Launch readiness
 
+- Add the existing membership-invitation validation and acceptance RPCs to the versioned migration history.
 - Convert prototype database changes into repeatable, versioned migrations.
 - Separate demonstration data from production-ready records.
 - Rehearse backup, restore, rollback and clean-staging deployment procedures.
 - Prepare production secrets and service configuration without committing credentials.
 - Validate authentication redirects, payments, webhooks, scheduled jobs, security and monitoring.
-

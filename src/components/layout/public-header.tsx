@@ -17,7 +17,6 @@ const navigation = [
 export function PublicHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const legacyLogin = `${process.env.NEXT_PUBLIC_LEGACY_SITE_URL ?? "https://dev.oneclub.net.in"}/login.html`;
 
   return (
     <header className="site-header">
@@ -28,7 +27,7 @@ export function PublicHeader() {
         {navigation.map((item) => (
           <Link href={item.href} key={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</Link>
         ))}
-        <a href={legacyLogin} onClick={() => setOpen(false)}>Member Login</a>
+        <Link href="/login" onClick={() => setOpen(false)}>Member Login</Link>
         <Link className="nav-cta" href="/contact" onClick={() => setOpen(false)}>Request an Enquiry</Link>
       </nav>
       <button className="menu-toggle" type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} onClick={() => setOpen((current) => !current)}>
@@ -37,4 +36,3 @@ export function PublicHeader() {
     </header>
   );
 }
-

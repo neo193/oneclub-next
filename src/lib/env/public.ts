@@ -1,17 +1,13 @@
-function requiredPublicValue(name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY") {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`${name} is required to connect to Supabase.`);
-  }
-
-  return value;
-}
-
 export function publicSupabaseEnvironment() {
+  // Next.js only exposes public environment variables to browser bundles when
+  // they are referenced statically. Dynamic process.env indexing stays undefined.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url) throw new Error("NEXT_PUBLIC_SUPABASE_URL is required to connect to Supabase.");
+  if (!anonKey) throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY is required to connect to Supabase.");
+
   return {
-    url: requiredPublicValue("NEXT_PUBLIC_SUPABASE_URL"),
-    anonKey: requiredPublicValue("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    url,
+    anonKey,
   };
 }
-

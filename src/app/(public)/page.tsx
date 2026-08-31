@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "A New Kind of Connection", description: "A private lifestyle club for meaningful connections, curated experiences and exclusive member privileges." };
@@ -20,7 +21,6 @@ const categories = [
 ];
 
 export default function HomePage() {
-  const legacyLogin = `${process.env.NEXT_PUBLIC_LEGACY_SITE_URL ?? "https://dev.oneclub.net.in"}/login.html`;
   return <>
     <section className="section home-hero">
       <div><p className="eyebrow"><span />A new kind of connection</p><h1>One Club.<br /><em>One life.</em><br />Unlimited possibilities.</h1><p className="hero-text">A private lifestyle club bringing together ambitious people, meaningful connections, curated experiences and exclusive privileges.</p><Button href="/contact" variant="primary">Request an Enquiry</Button><p className="micro-note">By invitation · Curated community</p></div>
@@ -32,7 +32,6 @@ export default function HomePage() {
     <section className="section"><div className="section-heading centered"><p className="eyebrow"><span />Curated access</p><h2>A world of <em>possibilities.</em></h2><p>Explore a growing network of partner properties and experiences across wellness, hospitality, adventure and lifestyle.</p></div><div className="partner-grid">{categories.map(([icon, title, copy], index) => <article className="partner-card" key={title}><Image src={`/assets/${icon}`} alt="" width={30} height={30} /><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
     <section className="section event-preview"><div className="section-heading centered"><p className="eyebrow"><span />Upcoming experiences</p><h2>Gather with <em>purpose.</em></h2><p>Active members receive complete event details, live availability and secure booking access for themselves and eligible guests.</p></div><article className="event-card"><div><span className="event-date">Founding series · Bangalore</span><h3>Founder&apos;s Breakfast</h3><p>An intimate morning for founders and business leaders to exchange ideas over a curated breakfast.</p></div><span className="event-status">Members only</span></article></section>
     <section className="section home-contact"><div><p className="eyebrow"><span />Take the next step</p><h2>Interested in<br /><em>One Club?</em></h2><p>Tell us a little about yourself and our team will get in touch with more information about membership, upcoming events and partner privileges.</p></div><div className="cta-panel"><span>Invitation-led membership</span><h3>Let&apos;s start a conversation.</h3><p>Your enquiry is personally reviewed by the One Club team.</p><Button href="/contact" variant="primary">Request an Enquiry</Button></div></section>
-    <section className="portal-preview"><p>Already a member? <a href={legacyLogin}>Sign in to access your account.</a></p></section>
+    <section className="portal-preview"><p>Already a member? <Link href="/login">Sign in to access your account.</Link></p></section>
   </>;
 }
-
