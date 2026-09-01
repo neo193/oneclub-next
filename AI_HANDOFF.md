@@ -99,7 +99,7 @@ Optional server-only diagnostics configuration:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_PAGES_PROJECT`
+- `CLOUDFLARE_WORKER_NAME` (currently `oneclub-next`)
 - `CLOUDFLARE_ZONE_ID`
 
 Without Cloudflare variables, diagnostics intentionally reports those provider checks as not configured while core checks continue to work. Never expose these values through `NEXT_PUBLIC_*` variables.

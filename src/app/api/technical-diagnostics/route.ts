@@ -41,11 +41,11 @@ export async function GET() {
   ]);
 
   let deployment: TechnicalDiagnostics["deployment"] = { configured: false, status: "Not configured" };
-  if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_PAGES_PROJECT) {
+  if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_WORKER_NAME) {
     const result = await timed(async () => {
-      const data = await fetchJson(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/pages/projects/${process.env.CLOUDFLARE_PAGES_PROJECT}/deployments?env=production&per_page=1`, { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } });
-      const latest = data.result?.[0];
-      return { status: latest?.latest_stage?.status || "Unknown", deployed_at: latest?.modified_on || null, commit: latest?.deployment_trigger?.metadata?.commit_hash?.slice(0, 8) || latest?.short_id || "—" };
+      const data = await fetchJson(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${process.env.CLOUDFLARE_WORKER_NAME}/deployments`, { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } });
+      const latest = data.result?.deployments?.[0];
+      return { status: latest ? "Deployed" : "No deployment", deployed_at: latest?.created_on || null, reference: latest?.id?.slice(0, 8) || "—" };
     });
     deployment = result.ok ? { configured: true, ...result.value } : { configured: true, status: "Check failed" };
   }
