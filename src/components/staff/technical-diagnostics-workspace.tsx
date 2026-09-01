@@ -5,7 +5,7 @@ import type { TechnicalDiagnostics } from "@/types/diagnostics";
 
 type Card = { title: string; status: string; description: string; detail?: string | null; metrics: Record<string, string | number | null> };
 const friendly = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-const state = (value: string) => /operational|connected|success/i.test(value) ? "healthy" : /not configured/i.test(value) ? "neutral" : "unhealthy";
+const state = (value: string) => /operational|connected|success|deployed/i.test(value) ? "healthy" : /not configured/i.test(value) ? "neutral" : "unhealthy";
 
 function cards(data: TechnicalDiagnostics): Card[] {
   return [
