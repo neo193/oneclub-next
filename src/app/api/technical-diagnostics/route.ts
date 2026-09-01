@@ -54,7 +54,7 @@ export async function GET() {
   let security: TechnicalDiagnostics["security"] = { configured: false, status: "Not configured", blocked_24h: null, challenged_24h: null };
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ZONE_ID) {
     const until = new Date(); const since = new Date(until.getTime() - 86_400_000);
-    const query = "query($zoneTag:String!,$filter:FirewallEventsAdaptiveGroupsFilter_InputObject){viewer{zones(filter:{zoneTag:$zoneTag}){firewallEventsAdaptiveGroups(limit:100,filter:$filter){count dimensions{action}}}}}";
+    const query = "query($zoneTag:string!,$filter:FirewallEventsAdaptiveGroupsFilter_InputObject){viewer{zones(filter:{zoneTag:$zoneTag}){firewallEventsAdaptiveGroups(limit:100,filter:$filter){count dimensions{action}}}}}";
     const result = await timed(async () => {
       const data = await fetchJson("https://api.cloudflare.com/client/v4/graphql", { method: "POST", headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, "Content-Type": "application/json" }, body: JSON.stringify({ query, variables: { zoneTag: process.env.CLOUDFLARE_ZONE_ID, filter: { datetime_geq: since.toISOString(), datetime_leq: until.toISOString() } } }) });
       const rows = data.data?.viewer?.zones?.[0]?.firewallEventsAdaptiveGroups || [];
