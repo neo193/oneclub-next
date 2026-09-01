@@ -20,6 +20,7 @@ async function fetchJson(url: string, init?: RequestInit) {
   const response = await fetch(url, { ...init, cache: "no-store" });
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.errors?.[0]?.message || data?.message || `HTTP ${response.status}`);
+  if (Array.isArray(data?.errors) && data.errors.length) throw new Error(data.errors[0]?.message || "Cloudflare API check failed");
   return data;
 }
 
