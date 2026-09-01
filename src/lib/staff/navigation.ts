@@ -14,10 +14,10 @@ export const staffNavigation: StaffNavigationItem[] = [
   { href: "/staff/overview", label: "Overview", description: "Business and operational indicators.", adminOnly: true, available: true },
   { href: "/staff/refunds", label: "Refunds", description: "Event refund and reconciliation controls.", adminOnly: true, available: true },
   { href: "/staff/invitations", label: "Invitations", description: "Review enquiries and generate membership invitations.", staffRoles: ["technical", "marketing", "general"], available: true },
-  { href: "/staff/members", label: "Members", description: "Profiles, membership controls and audit history.", staffRoles: ["general"] },
+  { href: "/staff/members", label: "Members", description: "Profiles, membership controls and audit history.", staffRoles: ["general"], available: true },
   { href: "/staff/support", label: "Support", description: "Review and update member support requests.", staffRoles: ["general"], available: true },
-  { href: "/staff/partners", label: "Partners & Benefits", description: "Partner, benefit and property content.", staffRoles: ["general"] },
-  { href: "/staff/events", label: "Events", description: "Event catalogue, capacity and complimentary bookings.", staffRoles: ["marketing"] },
+  { href: "/staff/partners", label: "Partners & Benefits", description: "Partner, benefit and property content.", staffRoles: ["general"], available: true },
+  { href: "/staff/events", label: "Events", description: "Event catalogue, capacity and complimentary bookings.", staffRoles: ["marketing"], available: true },
   { href: "/staff/diagnostics", label: "Diagnostics", description: "Read-only technical and data-integrity checks.", staffRoles: ["technical"], available: true },
 ];
 

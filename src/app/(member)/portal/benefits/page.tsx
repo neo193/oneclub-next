@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BenefitsCatalogue } from "@/components/member/benefits-catalogue";
 import { requireProfile } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
-import type { MemberBenefit } from "@/types/database";
+import type { MemberBenefitCatalogueItem } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Member Benefits",
@@ -23,8 +23,12 @@ export default async function MemberBenefitsPage() {
   }
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_active_member_benefits");
-  const benefits: MemberBenefit[] = data || [];
+  const catalogue = await supabase.rpc("get_active_member_benefit_catalogue");
+  const fallback = catalogue.error ? await supabase.rpc("get_active_member_benefits") : null;
+  const error = catalogue.error && fallback?.error ? fallback.error : null;
+  const benefits: MemberBenefitCatalogueItem[] = catalogue.error
+    ? (fallback?.data || []).map((item) => ({ ...item, locations: [] }))
+    : catalogue.data || [];
 
   return (
     <section className="section member-page">

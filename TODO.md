@@ -8,10 +8,10 @@
 - Migrate staff and administrator workspaces, excluding reservation operations:
   - [x] Shared role-aware staff shell and overview
   - [x] Invitations and enquiry approvals
-  - [ ] Member administration
+  - [x] Member administration
   - [x] Support operations
-  - [ ] Partner, benefit and property management
-  - [ ] Event management and complimentary bookings
+  - [x] Partner, benefit and property management
+  - [x] Event management and complimentary bookings
   - [x] Administrator refunds and technical diagnostics
 - [x] Synchronize the member-stage database contracts with the deployed schema fields used by the application.
 - Generate a complete Supabase CLI type export before migrating data-heavy staff pages (requires a linked CLI session).

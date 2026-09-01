@@ -55,7 +55,7 @@ export function RefundsWorkspace({ initialRefunds, initialError }: { initialRefu
         ))}
       </div>
       <p className="staff-security-note">Refunds are irreversible. Confirm the member, event, payment ID and amount before issuing one.</p>
-      <ConfirmationDialog open={Boolean(issueTarget)} title="Issue this full refund?" confirmLabel={`Refund ${issueTarget ? money(issueTarget.amount_paise) : ""}`} pending={Boolean(pendingId)} onClose={() => setIssueTarget(null)} onConfirm={() => issueTarget && run(issueTarget, "refund_issue")}>
+      <ConfirmationDialog open={Boolean(issueTarget)} title="Issue this full refund?" confirmLabel={`Refund ${issueTarget ? money(issueTarget.amount_paise) : ""}`} cancelLabel="Keep payment" pendingLabel="Issuing refund…" pending={Boolean(pendingId)} onClose={() => setIssueTarget(null)} onConfirm={() => issueTarget && run(issueTarget, "refund_issue")}>
         <p>You are about to refund <strong>{issueTarget ? money(issueTarget.amount_paise) : ""}</strong> to {issueTarget?.member_name || issueTarget?.member_email} for “{issueTarget?.event_title}”.</p><p>This financial action is irreversible and will be recorded in the audit trail.</p>
       </ConfirmationDialog>
     </div>

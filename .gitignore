@@ -6,3 +6,6 @@
 !.env.example
 *.tsbuildinfo
 
+/dist/
+.vinext/
+.wrangler/

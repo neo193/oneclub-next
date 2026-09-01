@@ -27,3 +27,28 @@ Quality gates:
 Database types in `src/types/database.ts` are an explicit placeholder. Generate
 them from the Supabase project before migrating data-heavy pages.
 
+## Cloudflare development deployment
+
+This is a full-stack application and must be deployed to Cloudflare Workers, not
+as a static Cloudflare Pages export. The repository includes the vinext adapter,
+`vite.config.ts`, and `wrangler.jsonc`.
+
+Cloudflare Workers Builds configuration:
+
+- Repository: `neo193/oneclub-next`
+- Production branch: `main`
+- Build command: `npm run build:vinext`
+- Deploy command: `npm run deploy:vinext`
+- Worker name: `oneclub-next-dev`
+
+Required build variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_LEGACY_SITE_URL=https://dev.oneclub.net.in`
+
+Test the generated `workers.dev` deployment before moving the custom domain.
+Then remove `dev.oneclub.net.in` from the legacy Pages project and add it as a
+custom domain on the `oneclub-next-dev` Worker. Keep the old Pages project intact
+until the new deployment has passed authentication and role-based smoke tests.
+

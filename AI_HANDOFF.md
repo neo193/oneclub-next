@@ -58,6 +58,18 @@ This repository (`oneclub-next`) is replacing the original HTML/CSS/JavaScript O
   - Application, Supabase database/authentication, payment and data-integrity checks.
   - Optional Cloudflare Pages deployment and security metrics.
   - Server-only provider credentials and sanitized browser responses.
+- Member administration:
+  - Searchable, filterable and paginated member directory with filtered CSV export.
+  - Responsive member record containing account facts, booking/payment/refund/support metrics, internal notes and audit activity.
+  - General staff and administrator suspend/reactivate controls with mandatory reasons and immediate UI refresh.
+  - Administrator-only profile corrections, membership cancellation/offer restoration, complimentary activation, expiry changes and offline payment recording.
+  - Shared confirmation workflow for audited or destructive actions.
+- Event management:
+  - Marketing staff and administrator event catalogue workspace with create/edit/status controls.
+  - Capacity, booking window, refund cutoff, guest-limit and per-person/fixed-booking price configuration.
+  - Published-event capacity-change reasons and backend committed-seat safeguards.
+  - Deletion eligibility checks and irreversible-action confirmation; events with booking history must be cancelled instead.
+  - Administrator-only complimentary bookings for active members, including guest limits, capacity checks and audited reasons.
 
 ## Authorization model
 
@@ -130,11 +142,9 @@ Use those commands when necessary; do not modify application code to compensate 
 
 Continue the staff/admin migration without reservations:
 
-1. Member administration.
-2. Event management and complimentary bookings.
-3. Partner, benefit and property management.
-4. Full role/access and responsive regression pass.
-5. Production deployment configuration and complete generated Supabase types.
+1. Finish staff-stage regression testing and production deployment configuration. Partner, benefit and property management is now migrated at `/staff/partners`, with one benefit per partner, primary and additional location editing, reservation contact metadata, and guarded deletion.
+2. Full role/access and responsive regression pass.
+3. Production deployment configuration and complete generated Supabase types.
 
 Only after the framework migration is stable should the legacy partner reservation module be migrated and its later stages resumed. The planned reservation stages are retained in `TODO.md`.
 

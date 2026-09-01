@@ -8,6 +8,8 @@ export function ConfirmationDialog({
   title,
   children,
   confirmLabel,
+  cancelLabel = "Go back",
+  pendingLabel = "Processing…",
   pending = false,
   onConfirm,
   onClose,
@@ -16,6 +18,8 @@ export function ConfirmationDialog({
   title: string;
   children: React.ReactNode;
   confirmLabel: string;
+  cancelLabel?: string;
+  pendingLabel?: string;
   pending?: boolean;
   onConfirm: () => void;
   onClose: () => void;
@@ -36,9 +40,9 @@ export function ConfirmationDialog({
         <h2>{title}</h2>
         <div className="confirmation-dialog-copy">{children}</div>
         <div className="confirmation-dialog-actions">
-          <Button type="button" variant="secondary" disabled={pending} onClick={onClose}>Keep booking</Button>
+          <Button type="button" variant="secondary" disabled={pending} onClick={onClose}>{cancelLabel}</Button>
           <Button type="button" variant="danger" disabled={pending} onClick={onConfirm}>
-            {pending ? "Cancelling…" : confirmLabel}
+            {pending ? pendingLabel : confirmLabel}
           </Button>
         </div>
       </div>

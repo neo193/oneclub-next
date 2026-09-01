@@ -6,5 +6,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Session refresh is only needed before protected server-rendered routes.
+  // Running it for public and authentication pages makes those pages depend on
+  // Supabase availability and previously introduced 25-second retry delays.
+  matcher: ["/portal/:path*", "/staff/:path*"],
 };

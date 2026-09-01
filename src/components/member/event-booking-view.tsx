@@ -427,6 +427,8 @@ export function EventBookingView({
         open={Boolean(cancelTarget)}
         title="Cancel this event booking?"
         confirmLabel="Cancel booking"
+        cancelLabel="Keep booking"
+        pendingLabel="Cancelling…"
         pending={actionPending}
         onClose={() => setCancelTarget(null)}
         onConfirm={() => cancelTarget && handleCancelBooking(cancelTarget.booking_id)}
