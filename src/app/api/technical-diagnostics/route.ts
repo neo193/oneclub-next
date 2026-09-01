@@ -1,14 +1,20 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getAuthenticatedProfile } from "@/lib/auth/profile";
 import { publicSupabaseEnvironment } from "@/lib/env/public";
 import { createClient } from "@/lib/supabase/server";
 import type { TechnicalDiagnostics } from "@/types/diagnostics";
 
 type TimedResult<T> = { ok: true; latency: number; value: T } | { ok: false; latency: number; error: string };
+const elapsedMilliseconds = (started: number) => Math.max(1, Math.round(performance.now() - started));
+
 async function timed<T>(task: () => Promise<T>): Promise<TimedResult<T>> {
-  const started = Date.now();
-  try { return { ok: true, latency: Date.now() - started, value: await task() }; }
-  catch (error) { return { ok: false, latency: Date.now() - started, error: error instanceof Error ? error.message : "Check failed" }; }
+  const started = performance.now();
+  try {
+    const value = await task();
+    return { ok: true, latency: elapsedMilliseconds(started), value };
+  } catch (error) {
+    return { ok: false, latency: elapsedMilliseconds(started), error: error instanceof Error ? error.message : "Check failed" };
+  }
 }
 async function fetchJson(url: string, init?: RequestInit) {
   const response = await fetch(url, { ...init, cache: "no-store" });
@@ -17,7 +23,8 @@ async function fetchJson(url: string, init?: RequestInit) {
   return data;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const applicationStarted = performance.now();
   const profile = await getAuthenticatedProfile();
   if (!profile) return NextResponse.json({ message: "Authentication required" }, { status: 401 });
   if (!(profile.app_role === "admin" || (profile.app_role === "staff" && profile.staff_role === "technical"))) {
@@ -26,9 +33,8 @@ export async function GET(request: NextRequest) {
 
   const environment = publicSupabaseEnvironment();
   const supabase = await createClient();
-  const origin = new URL(request.url).origin;
-  const [application, auth, database, pendingRefunds] = await Promise.all([
-    timed(async () => { const response = await fetch(`${origin}/`, { cache: "no-store" }); if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.status; }),
+  const applicationLatency = elapsedMilliseconds(applicationStarted);
+  const [auth, database, pendingRefunds] = await Promise.all([
     timed(async () => { const response = await fetch(`${environment.url}/auth/v1/health`, { headers: { apikey: environment.anonKey }, cache: "no-store" }); if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.status; }),
     timed(async () => { const { data, error } = await supabase.rpc("get_technical_diagnostics"); if (error) throw new Error(error.message); return data; }),
     timed(async () => { const { data, error } = await supabase.rpc("get_pending_refund_count"); if (error) throw new Error(error.message); return Number(data || 0); }),
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
   const operational = database.ok && database.value && typeof database.value === "object" && !Array.isArray(database.value) ? database.value as Record<string, Record<string, number>> : {};
   const response: TechnicalDiagnostics = {
     checked_at: new Date().toISOString(),
-    application: { status: application.ok ? "Operational" : "Unavailable", latency_ms: application.latency },
+    application: { status: "Operational", latency_ms: applicationLatency },
     supabase: { database_status: database.ok ? "Connected" : "Unavailable", database_latency_ms: database.latency, auth_status: auth.ok ? "Connected" : "Unavailable", auth_latency_ms: auth.latency },
     payments: { service_status: database.ok ? "Connected" : "Unavailable", failed: operational.payments?.failed || 0, unreconciled: (operational.payments?.created || 0) + (operational.events?.pending_bookings || 0) },
     deployment, security,

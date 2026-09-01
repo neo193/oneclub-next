@@ -169,7 +169,8 @@
 .diagnostics-toolbar-next strong.healthy { color: #8fbd7c; }
 .diagnostics-toolbar-next strong.unhealthy { color: #e78b78; }
 .diagnostics-toolbar-next strong.neutral { color: var(--muted); }
-.diagnostics-toolbar-next p { margin: 5px 0 0; color: var(--muted-dark); font-size: 10px; }
+.diagnostics-toolbar-next > div { align-items: center; }
+.diagnostics-toolbar-next p { margin: 0; color: var(--muted-dark); font-size: 10px; }
 .technical-grid-next { display: grid; gap: 18px; margin-top: 18px; }
 .technical-card-next { padding: 26px; border: 1px solid var(--line); background: rgba(255,255,255,.015); }
 .technical-card-next header { display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 14px; }
@@ -454,6 +455,7 @@
   .partner-card-head-next,
   .partner-card-actions-next,
   .location-heading-next { align-items: stretch; flex-direction: column; }
+  .diagnostics-toolbar-next p { margin-top: 5px; }
   .staff-toolbar > div .button,
   .partner-card-actions-next .button,
   .location-heading-next .button { width: 100%; }
