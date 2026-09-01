@@ -4,7 +4,8 @@ export type TechnicalDiagnostics = {
   supabase: { database_status: string; database_latency_ms: number; auth_status: string; auth_latency_ms: number };
   payments: { service_status: string; failed: number; unreconciled: number };
   deployment: { configured: boolean; status: string; deployed_at?: string | null; reference?: string | null };
-  security: { configured: boolean; status: string; blocked_24h: number | null; challenged_24h: number | null };
+  security: { configured: boolean; status: string; blocked_24h: number | null; challenged_24h: number | null; detail?: string | null };
   data_integrity: { pending_event_holds: number; pending_refunds: number | null; suspended_members: number };
   provider_configuration: { cloudflare_api: boolean; cloudflare_security: boolean };
 };
+

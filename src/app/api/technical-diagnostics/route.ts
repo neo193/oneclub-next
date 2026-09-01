@@ -44,9 +44,9 @@ export async function GET() {
   let deployment: TechnicalDiagnostics["deployment"] = { configured: false, status: "Not configured" };
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_WORKER_NAME) {
     const result = await timed(async () => {
-      const data = await fetchJson(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${process.env.CLOUDFLARE_WORKER_NAME}/deployments`, { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } });
-      const latest = data.result?.deployments?.[0];
-      return { status: latest ? "Deployed" : "No deployment", deployed_at: latest?.created_on || null, reference: latest?.id?.slice(0, 8) || "—" };
+      const data = await fetchJson(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${process.env.CLOUDFLARE_WORKER_NAME}/versions?deployable=true&per_page=1`, { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}` } });
+      const latest = data.result?.items?.[0];
+      return { status: latest ? "Deployed" : "No version", deployed_at: latest?.metadata?.created_on || null, reference: latest?.id?.slice(0, 8) || "—" };
     });
     deployment = result.ok ? { configured: true, ...result.value } : { configured: true, status: "Check failed" };
   }
@@ -54,16 +54,16 @@ export async function GET() {
   let security: TechnicalDiagnostics["security"] = { configured: false, status: "Not configured", blocked_24h: null, challenged_24h: null };
   if (process.env.CLOUDFLARE_API_TOKEN && process.env.CLOUDFLARE_ZONE_ID) {
     const until = new Date(); const since = new Date(until.getTime() - 86_400_000);
-    const query = "query($zoneTag:string!,$filter:FirewallEventsAdaptiveGroupsFilter_InputObject){viewer{zones(filter:{zoneTag:$zoneTag}){firewallEventsAdaptiveGroups(limit:100,filter:$filter){count dimensions{action}}}}}";
+    const query = "query($zoneTag:string,$filter:FirewallEventsAdaptiveFilter_InputObject){viewer{zones(filter:{zoneTag:$zoneTag}){firewallEventsAdaptive(limit:10000,filter:$filter){action}}}}";
     const result = await timed(async () => {
       const data = await fetchJson("https://api.cloudflare.com/client/v4/graphql", { method: "POST", headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, "Content-Type": "application/json" }, body: JSON.stringify({ query, variables: { zoneTag: process.env.CLOUDFLARE_ZONE_ID, filter: { datetime_geq: since.toISOString(), datetime_leq: until.toISOString() } } }) });
-      const rows = data.data?.viewer?.zones?.[0]?.firewallEventsAdaptiveGroups || [];
+      const rows = data.data?.viewer?.zones?.[0]?.firewallEventsAdaptive || [];
       return {
-        blocked_24h: rows.filter((row: { dimensions?: { action?: string } }) => ["block", "drop"].includes(String(row.dimensions?.action))).reduce((sum: number, row: { count?: number }) => sum + Number(row.count || 0), 0),
-        challenged_24h: rows.filter((row: { dimensions?: { action?: string } }) => String(row.dimensions?.action).includes("challenge")).reduce((sum: number, row: { count?: number }) => sum + Number(row.count || 0), 0),
+        blocked_24h: rows.filter((row: { action?: string }) => ["block", "drop"].includes(String(row.action))).length,
+        challenged_24h: rows.filter((row: { action?: string }) => String(row.action).includes("challenge")).length,
       };
     });
-    security = result.ok ? { configured: true, status: "Connected", ...result.value } : { configured: true, status: "Check failed", blocked_24h: null, challenged_24h: null };
+    security = result.ok ? { configured: true, status: "Connected", ...result.value, detail: null } : { configured: true, status: "Check failed", blocked_24h: null, challenged_24h: null, detail: result.error.slice(0, 180) };
   }
 
   const operational = database.ok && database.value && typeof database.value === "object" && !Array.isArray(database.value) ? database.value as Record<string, Record<string, number>> : {};
@@ -78,3 +78,4 @@ export async function GET() {
   };
   return NextResponse.json(response, { headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
 }
+

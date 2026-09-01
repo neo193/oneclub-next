@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { TechnicalDiagnostics } from "@/types/diagnostics";
 
-type Card = { title: string; status: string; description: string; metrics: Record<string, string | number | null> };
+type Card = { title: string; status: string; description: string; detail?: string | null; metrics: Record<string, string | number | null> };
 const friendly = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 const state = (value: string) => /operational|connected|success/i.test(value) ? "healthy" : /not configured/i.test(value) ? "neutral" : "unhealthy";
 
@@ -13,7 +13,7 @@ function cards(data: TechnicalDiagnostics): Card[] {
     { title: "Supabase", status: data.supabase.database_status, metrics: { database_response: `${data.supabase.database_latency_ms} ms`, authentication: data.supabase.auth_status, auth_response: `${data.supabase.auth_latency_ms} ms` }, description: "Checks authenticated database access and the authentication service." },
     { title: "Payments", status: data.payments.service_status, metrics: { failed: data.payments.failed, unreconciled: data.payments.unreconciled }, description: "Surfaces payment records that may need technical reconciliation." },
     { title: "Cloudflare deployment", status: data.deployment.status, metrics: { deployment_reference: data.deployment.reference || "—", deployed: data.deployment.deployed_at ? new Date(data.deployment.deployed_at).toLocaleString("en-IN") : "—" }, description: "Reports the Worker deployment currently serving production traffic when provider access is configured." },
-    { title: "Security", status: data.security.status, metrics: { blocked_24h: data.security.blocked_24h, challenged_24h: data.security.challenged_24h }, description: "Summarizes Cloudflare security actions without exposing visitor identities." },
+    { title: "Security", status: data.security.status, metrics: { blocked_24h: data.security.blocked_24h, challenged_24h: data.security.challenged_24h }, description: "Summarizes Cloudflare security actions without exposing visitor identities.", detail: data.security.detail },
     { title: "Data integrity", status: "Connected", metrics: { pending_event_holds: data.data_integrity.pending_event_holds, pending_refunds: data.data_integrity.pending_refunds, suspended_members: data.data_integrity.suspended_members }, description: "Highlights operational records that may require investigation or follow-up." },
   ];
 }
@@ -74,6 +74,7 @@ export function TechnicalDiagnosticsWorkspace() {
           <article className="technical-card-next" key={card.title}>
             <header><span>{String(index + 1).padStart(2, "0")}</span><h2>{card.title}</h2><strong className={state(card.status)}>{card.status}</strong></header>
             <p>{card.description}</p>
+            {card.detail ? <p className="form-message">Cloudflare response: {card.detail}</p> : null}
             <div>{Object.entries(card.metrics).map(([name, value]) => <span key={name}><strong>{value ?? "—"}</strong><small>{friendly(name)}</small></span>)}</div>
           </article>
         ))}
@@ -82,3 +83,4 @@ export function TechnicalDiagnosticsWorkspace() {
     </div>
   );
 }
+
