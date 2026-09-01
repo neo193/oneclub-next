@@ -5,6 +5,7 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "keep_vars": true,
   "main": "vinext/server/fetch-handler",
   "assets": {
     "directory": "dist/client",
