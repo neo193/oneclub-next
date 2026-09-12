@@ -66,6 +66,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_public_upcoming_event: {
+        Args: Record<string, never>;
+        Returns: { title: string; venue: string; description: string }[];
+      };
       validate_membership_invitation: {
         Args: { p_token: string };
         Returns: { email: string; expires_at: string; status: string }[];
@@ -324,3 +328,4 @@ export type MembershipControl = {
   terms: { id: string; plan: string; source: string; status: string; starts_at: string; expires_at: string | null; amount_paise: number | null; payment_method: string | null; transaction_reference: string | null; payment_received_at: string | null; reason: string | null; created_at: string }[];
 };
 export type ManagedEvent = Database["public"]["Functions"]["list_events_for_management"]["Returns"][number];
+
