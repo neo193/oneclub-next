@@ -74,7 +74,12 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
     if(password.length<8){setMessage("Enter your current password.");return;}
     setPending(true);setMessage("Permanently deleting your account…");
     const {data,error}=await createClient().functions.invoke("account-deletion",{body:{password}});
-    if(error||!data?.deleted){setPending(false);setMessage(data?.message||error?.message||"Account deletion failed.");return;}
+    let errorMessage=data?.message||error?.message||"Account deletion failed.";
+    if(error&&"context" in error&&error.context instanceof Response){
+      const body=await error.context.clone().json().catch(()=>null);
+      if(body?.message)errorMessage=body.message;
+    }
+    if(error||!data?.deleted){setPending(false);setMessage(errorMessage);return;}
     router.replace("/login?account=deleted");
     router.refresh();
   }
@@ -209,5 +214,4 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
     </div>
   );
 }
-
 

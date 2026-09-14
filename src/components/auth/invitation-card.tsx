@@ -19,9 +19,16 @@ export function InvitationCard({ token }: { token: string | null }) {
       if(error){setMessage(error.message);setLoading(false);return;}
       if(!info||info.status!=="active"){setMessage("This invitation is invalid, expired or already used.");setLoading(false);return;}
       setInvitation(info);setSignedIn(Boolean(userData.user));setLoading(false);
+      if(userData.user){
+        setPending(true);setMessage("Connecting this invitation to your account…");
+        const {error:acceptError}=await supabase.rpc("accept_membership_invitation",{p_token:token});
+        if(!active)return;
+        if(acceptError){setMessage(acceptError.message);setPending(false);return;}
+        setMessage("Invitation accepted. Taking you to your portal…");router.replace("/portal");router.refresh();
+      }
     }
     void load(); return()=>{active=false;};
-  },[token]);
+  },[token,router]);
 
   async function createAccount(event:FormEvent<HTMLFormElement>){
     event.preventDefault(); if(!invitation||!token)return; const values=new FormData(event.currentTarget); const password=String(values.get("password")??"");

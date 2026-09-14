@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
     if (!error) return NextResponse.redirect(new URL(next, url.origin));
   }
   const errorUrl = new URL("/login", url.origin);
-  errorUrl.searchParams.set("error", "This authentication link is invalid or has expired.");
+  errorUrl.searchParams.set("next", next);
+  errorUrl.searchParams.set("error", next.startsWith("/membership-invite")
+    ? "Your email is confirmed. Sign in to finish accepting your membership invitation."
+    : "This authentication link is invalid or has expired.");
   return NextResponse.redirect(errorUrl);
 }

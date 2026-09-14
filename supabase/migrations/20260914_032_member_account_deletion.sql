@@ -129,7 +129,7 @@ begin
   delete from public.account_deletion_support_contexts where member_id=p_member_id;
   update public.profiles set full_name='Removed user',phone=null,birthday=null,locality=null,interests='{}',profession=null,industry=null,avatar_url=null,
     membership_state='cancelled',member_number=null,founding_member_sequence=null,membership_plan=null,membership_started_at=null,membership_expires_at=null,
-    pending_membership_plan=null,pending_membership_source=null,membership_status_context='Account deleted by member',payment_offer_expires_at=null,
+    pending_membership_plan=null,pending_membership_source=null,membership_status_context=null,payment_offer_expires_at=null,
     deleted_at=now(),deletion_reference=v_ref,updated_at=now() where id=p_member_id;
   insert into public.audit_log(actor_id,action,entity_type,entity_id,details)
     values(null,'member.account_deleted','member',p_member_id::text,jsonb_build_object('deletion_reference',v_ref));
@@ -148,4 +148,3 @@ grant execute on function public.get_account_deletion_eligibility(),public.valid
 grant execute on function public.finalize_member_account_anonymization(uuid,text) to service_role;
 
 commit;
-

@@ -18,6 +18,5 @@ Deno.serve(async(req)=>{
     if(!eligibility?.allowed)throw new Error(eligibility?.block_reason==="pending_refunds"?"Pending refunds must be resolved first":"Upcoming bookings must be resolved first");
     const prepared=await request("/rest/v1/rpc/finalize_member_account_anonymization",serviceKey,`Bearer ${serviceKey}`,{method:"POST",body:JSON.stringify({p_member_id:user.id,p_original_email:user.email})});
     return json({deleted:true,deletion_reference:prepared?.deletion_reference});
-  }catch(error){return json({message:error instanceof Error?error.message:"Account deletion failed"},400);}
+  }catch(error){const message=error instanceof Error?error.message:"Account deletion failed";console.error("Account deletion failed",{message});return json({message},400);}
 });
-
