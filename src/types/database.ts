@@ -34,6 +34,8 @@ export type Database = {
           payment_offer_expires_at: string | null;
           created_at: string;
           updated_at: string;
+          deleted_at: string | null;
+          deletion_reference: string | null;
         };
         Insert: {
           id: string;
@@ -59,6 +61,8 @@ export type Database = {
           payment_offer_expires_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
+          deletion_reference?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
         Relationships: [];
@@ -143,6 +147,10 @@ export type Database = {
         Args: { p_category: string; p_message: string };
         Returns: string;
       };
+      get_account_deletion_eligibility: { Args: Record<string, never>; Returns: AccountDeletionEligibility };
+      validate_account_deletion_support_context: { Args: { p_context: string }; Returns: boolean };
+      consume_account_deletion_support_context: { Args: { p_context: string }; Returns: void };
+      submit_account_deletion_support_request: { Args: { p_context: string; p_message: string }; Returns: string };
       list_enquiries_for_staff: {
         Args: Record<string, never>;
         Returns: {
@@ -273,6 +281,7 @@ export type Database = {
 };
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type AccountDeletionEligibility = { allowed: boolean; block_reason: "upcoming_bookings" | "pending_refunds" | null; upcoming_event_bookings: number; upcoming_property_bookings: number; pending_refunds: number; support_context: string | null };
 export type MemberBenefit = Database["public"]["Functions"]["get_active_member_benefits"]["Returns"][number];
 export type MemberBenefitCatalogueItem = Database["public"]["Functions"]["get_active_member_benefit_catalogue"]["Returns"][number];
 export type MemberEvent = Database["public"]["Functions"]["get_member_events"]["Returns"][number];

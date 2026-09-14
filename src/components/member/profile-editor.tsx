@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import type { AccountDeletionEligibility } from "@/types/database";
 import type { Profile } from "@/types/database";
 
 export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEmail: string }) {
@@ -16,6 +18,10 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
   const [interests, setInterests] = useState((profile.interests || []).join(", "));
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
+  const [deletion, setDeletion] = useState<"confirm" | "bookings" | "refunds" | null>(null);
+  const [eligibility, setEligibility] = useState<AccountDeletionEligibility | null>(null);
+  const [deletePhrase, setDeletePhrase] = useState("");
+  const [password, setPassword] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,6 +58,25 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
     } finally {
       setPending(false);
     }
+  }
+
+  async function beginDeletion() {
+    setPending(true);setMessage("Checking your account…");
+    const {data,error}=await createClient().rpc("get_account_deletion_eligibility");
+    setPending(false);
+    if(error){setMessage(error.message);return;}
+    const result=data as AccountDeletionEligibility;setEligibility(result);setMessage("");
+    setDeletion(result.allowed?"confirm":result.block_reason==="pending_refunds"?"refunds":"bookings");
+  }
+
+  async function deleteAccount() {
+    if(deletePhrase!=="DELETE MY ACCOUNT"){setMessage("Type DELETE MY ACCOUNT exactly as shown.");return;}
+    if(password.length<8){setMessage("Enter your current password.");return;}
+    setPending(true);setMessage("Permanently deleting your account…");
+    const {data,error}=await createClient().functions.invoke("account-deletion",{body:{password}});
+    if(error||!data?.deleted){setPending(false);setMessage(data?.message||error?.message||"Account deletion failed.");return;}
+    router.replace("/login?account=deleted");
+    router.refresh();
   }
 
   return (
@@ -164,7 +189,25 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
           </p>
         </div>
       </form>
+      <section className="account-deletion-panel">
+        <p className="eyebrow compact">PERMANENT ACCOUNT ACTION</p><h2>Delete My Account</h2>
+        <p>This removes your access and personal profile information. Booking and financial records are retained anonymously.</p>
+        <button className="button button-danger" type="button" disabled={pending} onClick={beginDeletion}>Delete My Account</button>
+      </section>
+      <ConfirmationDialog open={deletion==="bookings"} title="Account deletion is unavailable" confirmLabel="Close" cancelLabel="View bookings" onClose={()=>router.push("/portal/events")} onConfirm={()=>setDeletion(null)}>
+        <p>Your account has {eligibility?.upcoming_event_bookings||0} upcoming event booking(s) and {eligibility?.upcoming_property_bookings||0} active property booking(s). Cancel or complete them before deleting your account.</p>
+      </ConfirmationDialog>
+      <ConfirmationDialog open={deletion==="refunds"} title="A refund still needs attention" confirmLabel="Contact support" cancelLabel="Go back" onClose={()=>setDeletion(null)} onConfirm={()=>router.push(`/portal/support?accountDeletion=${encodeURIComponent(eligibility?.support_context||"")}`)}>
+        <p>{eligibility?.pending_refunds||0} refund(s) are unresolved. The membership desk will expedite them before account deletion can continue.</p>
+      </ConfirmationDialog>
+      <ConfirmationDialog open={deletion==="confirm"} title="Permanently delete your account?" confirmLabel="Delete account" pending={pending} pendingLabel="Deleting…" onClose={()=>setDeletion(null)} onConfirm={deleteAccount}>
+        <p>This cannot be undone. Your original email will be released for a new account, but the new account will not inherit this account&apos;s history.</p>
+        <label className="deletion-confirm-field">Current password<input type="password" autoComplete="current-password" value={password} onChange={event=>setPassword(event.target.value)} /></label>
+        <label className="deletion-confirm-field">Type DELETE MY ACCOUNT<input value={deletePhrase} autoComplete="off" onChange={event=>setDeletePhrase(event.target.value)} /></label>
+        {message&&<p className="form-message" aria-live="polite">{message}</p>}
+      </ConfirmationDialog>
     </div>
   );
 }
+
 

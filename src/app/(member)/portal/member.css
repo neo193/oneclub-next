@@ -556,6 +556,11 @@
 .profile-form .wide {
   grid-column: 1/-1;
 }
+.account-deletion-panel { margin-top: 42px; padding: 28px; border: 1px solid rgba(205,103,78,.55); background: rgba(205,103,78,.045); }
+.account-deletion-panel h2 { margin: 10px 0; font-size: 28px; }
+.account-deletion-panel > p:not(.eyebrow) { max-width: 700px; margin-bottom: 18px; color: var(--muted); font-size: 13px; }
+.deletion-confirm-field { display: block; margin-top: 14px; color: var(--gold-light); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.deletion-confirm-field input { display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 0 12px; border: 1px solid var(--line); background: #090909; color: var(--cream); }
 
 /* Member Support & Identity */
 .support-identity {
@@ -738,3 +743,4 @@
     overflow-wrap: anywhere;
   }
 }
+

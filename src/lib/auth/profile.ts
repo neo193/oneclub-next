@@ -20,7 +20,7 @@ export async function getAuthenticatedProfile(): Promise<Profile | null> {
     });
     return null;
   }
-  if (!data) return null;
+  if (!data || data.deleted_at) return null;
   return data;
 }
 
@@ -33,3 +33,4 @@ export async function requireProfile(nextPath: string) {
 export function destinationForProfile(profile: Pick<Profile, "app_role">) {
   return profile.app_role === "member" ? "/portal" : "/staff";
 }
+

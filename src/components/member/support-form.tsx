@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 
@@ -13,7 +13,8 @@ export function MemberSupportForm({
   userEmail: string;
 }) {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "membership_access";
+  const deletionContext = searchParams.get("accountDeletion");
+  const initialCategory = "membership_access";
   const initialReservation = searchParams.get("reservation");
 
   const [category, setCategory] = useState<string>(initialCategory);
@@ -22,6 +23,9 @@ export function MemberSupportForm({
   );
   const [statusText, setStatusText] = useState<string>("");
   const [pending, setPending] = useState<boolean>(false);
+  const [deletionEscalation, setDeletionEscalation] = useState(false);
+
+  useEffect(()=>{if(!deletionContext)return;void (async()=>{const {data}=await createClient().rpc("validate_account_deletion_support_context",{p_context:deletionContext});if(data){setDeletionEscalation(true);setCategory("account_deletion");setMessage("Please expedite the unresolved refund(s) so I can delete my account.\n\n");}})();},[deletionContext]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,10 +36,9 @@ export function MemberSupportForm({
 
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.rpc("submit_member_support_request", {
-        p_category: category,
-        p_message: message.trim(),
-      });
+      const { data, error } = deletionEscalation&&deletionContext
+        ? await supabase.rpc("submit_account_deletion_support_request",{p_context:deletionContext,p_message:message.trim()})
+        : await supabase.rpc("submit_member_support_request", {p_category: category,p_message: message.trim()});
 
       if (error) throw new Error(error.message);
 
@@ -85,8 +88,10 @@ export function MemberSupportForm({
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
+            disabled={deletionEscalation}
             required
           >
+            {deletionEscalation&&<option value="account_deletion">Account deletion</option>}
             <option value="membership_access">Membership access</option>
             <option value="payment">Payment & Billing</option>
             <option value="event_booking">Event booking & Guest places</option>
@@ -120,4 +125,5 @@ export function MemberSupportForm({
     </div>
   );
 }
+
 
