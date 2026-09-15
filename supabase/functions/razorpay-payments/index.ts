@@ -39,7 +39,13 @@ Deno.serve(async(req)=>{
     if(input.action==="create"){
       let amount:number,bookingId:null|string=null,description:string,membershipPlan:null|string=null,membershipTierId:null|string=null,membershipCredit=0;
       if(input.purpose==="membership"){
-        const prepared=await rest("rpc/prepare_membership_tier_payment",{method:"POST",body:JSON.stringify({p_member_id:user.id,p_tier_id:input.membership_tier_id})});amount=prepared.amount_paise;membershipPlan=prepared.plan;membershipTierId=prepared.tier_id;membershipCredit=prepared.credit_paise||0;description=prepared.description;
+        let requestedTierId=input.membership_tier_id;
+        if(!requestedTierId&&input.membership_plan){
+          const legacyTier=await rest(`membership_tiers?select=id&code=eq.${encodeURIComponent(input.membership_plan)}&status=eq.published&limit=1`);
+          requestedTierId=legacyTier[0]?.id;
+        }
+        if(!requestedTierId)throw new Error("Select an available membership tier");
+        const prepared=await rest("rpc/prepare_membership_tier_payment",{method:"POST",body:JSON.stringify({p_member_id:user.id,p_tier_id:requestedTierId})});amount=prepared.amount_paise;membershipPlan=prepared.plan;membershipTierId=prepared.tier_id;membershipCredit=prepared.credit_paise||0;description=prepared.description;
       }else if(input.purpose==="event"){
         const bookings=await rest(`event_bookings?select=id,amount_paise,status,reservation_expires_at,event_id&member_id=eq.${user.id}&id=eq.${input.booking_id}`);const booking=bookings[0];if(!booking||booking.status!=="pending_payment"||new Date(booking.reservation_expires_at)<=new Date())throw new Error("Event reservation has expired or is not payable");amount=booking.amount_paise;bookingId=booking.id;description="One Club Event Booking";await rest(`event_bookings?id=eq.${booking.id}`,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({reservation_expires_at:new Date(Date.now()+15*60*1000).toISOString(),updated_at:new Date().toISOString()})});
       }else throw new Error("Unsupported payment purpose");
