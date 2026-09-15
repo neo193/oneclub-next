@@ -19,6 +19,7 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const email = String(claimsData?.claims?.email || "");
+  const { data: purchaseOptions } = await supabase.rpc("get_membership_purchase_options");
   const isActive = profile.membership_state === "active";
   const isPaymentPending = profile.membership_state === "payment_pending";
   const isSuspended = profile.membership_state === "suspended";
@@ -80,6 +81,9 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
                   <Button href="/portal/profile" variant="secondary">
                     Edit my profile
                   </Button>
+                  {profile.membership_plan === "annual" && Number(purchaseOptions?.founding_places_remaining || 0) > 0 && (
+                    <Button href="/portal/membership/upgrade" variant="secondary">Upgrade to Founding</Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -96,7 +100,7 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
               )}
             </p>
             <div className="portal-actions">
-              <MembershipPayment email={email} />
+              {purchaseOptions && <MembershipPayment email={email} options={purchaseOptions} />}
               <Button href="/portal/profile" variant="secondary">
                 Edit my profile
               </Button>
