@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast-provider";
 import type { StaffSupportRequest } from "@/types/database";
 
 type SupportStatus = StaffSupportRequest["status"];
@@ -11,30 +12,29 @@ const friendly = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, 
 export function SupportWorkspace({ initialRequests, initialError }: { initialRequests: StaffSupportRequest[]; initialError: string }) {
   const [requests, setRequests] = useState(initialRequests);
   const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState(initialError || `${initialRequests.length} support requests loaded.`);
+  const [message] = useState(initialError);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const { notify } = useToast();
 
   async function load(nextFilter = filter) {
-    setMessage("Loading support requests…");
     const supabase = createClient();
     const { data, error } = await supabase.rpc("list_support_requests_for_staff", { p_status: nextFilter || null });
     if (error) throw new Error(error.message);
     setRequests(data || []);
-    setMessage(`${data?.length || 0} support ${data?.length === 1 ? "request" : "requests"} loaded.`);
+    notify(`${data?.length || 0} support ${data?.length === 1 ? "request" : "requests"} loaded.`);
   }
 
   async function updateStatus(request: StaffSupportRequest, status: SupportStatus) {
     setPendingId(request.id);
-    setMessage(`Updating ${request.full_name || request.email}…`);
     try {
       const supabase = createClient();
       const { error } = await supabase.rpc("update_support_request_status", { p_request_id: request.id, p_status: status });
       if (error) throw new Error(error.message);
       setRequests((rows) => rows.map((row) => row.id === request.id ? { ...row, status } : row));
-      setMessage(`Request updated to ${friendly(status)}.`);
+      notify(`Request updated to ${friendly(status)}.`, "success");
       if (filter && filter !== status) setRequests((rows) => rows.filter((row) => row.id !== request.id));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Support request could not be updated.");
+      notify(error instanceof Error ? error.message : "Support request could not be updated.", "error");
     } finally {
       setPendingId(null);
     }
@@ -44,13 +44,14 @@ export function SupportWorkspace({ initialRequests, initialError }: { initialReq
     <div className="staff-workspace">
       <div className="staff-toolbar support-toolbar-next">
         <label>Status filter
-          <select value={filter} onChange={(event) => { const value = event.target.value; setFilter(value); void load(value).catch((error) => setMessage(error.message)); }}>
+          <select value={filter} onChange={(event) => { const value = event.target.value; setFilter(value); void load(value).catch((error) => notify(error.message, "error")); }}>
             <option value="">All requests</option>
             {statuses.map((status) => <option value={status} key={status}>{friendly(status)}</option>)}
           </select>
         </label>
-        <p className="form-message" aria-live="polite">{message}</p>
+        <p>{requests.length} requests</p>
       </div>
+      {message && <p className="form-message" role="alert">{message}</p>}
       <div className="support-request-list-next">
         {requests.length === 0 ? <p className="staff-empty">No support requests match this filter.</p> : requests.map((request) => (
           <article className={`support-request-card-next support-state-${request.status}`} key={request.id}>
@@ -77,3 +78,4 @@ export function SupportWorkspace({ initialRequests, initialError }: { initialReq
     </div>
   );
 }
+

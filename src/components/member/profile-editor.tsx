@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useToast } from "@/components/ui/toast-provider";
 import type { AccountDeletionEligibility } from "@/types/database";
 import type { Profile } from "@/types/database";
 
@@ -17,6 +18,7 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
   const [industry, setIndustry] = useState(profile.industry || "");
   const [interests, setInterests] = useState((profile.interests || []).join(", "));
   const [message, setMessage] = useState("");
+  const { notify } = useToast();
   const [pending, setPending] = useState(false);
   const [deletion, setDeletion] = useState<"confirm" | "bookings" | "refunds" | null>(null);
   const [eligibility, setEligibility] = useState<AccountDeletionEligibility | null>(null);
@@ -26,7 +28,7 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
-    setMessage("Saving profile…");
+    setMessage("");
 
     const interestsArray = interests
       .split(",")
@@ -51,10 +53,10 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
 
       if (error) throw new Error(error.message);
 
-      setMessage("Profile saved successfully.");
+      notify("Profile saved successfully.", "success");
       router.refresh();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to update profile.");
+      notify(err instanceof Error ? err.message : "Failed to update profile.", "error");
     } finally {
       setPending(false);
     }
@@ -214,4 +216,5 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
     </div>
   );
 }
+
 

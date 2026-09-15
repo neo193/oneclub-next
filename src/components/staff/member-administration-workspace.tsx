@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useToast } from "@/components/ui/toast-provider";
 import { createClient } from "@/lib/supabase/client";
 import type { ManagedMember, MemberAdminRecord, MembershipControl } from "@/types/database";
 
@@ -42,6 +43,7 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
   const [pending, setPending] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation>(null);
   const [accessDraft, setAccessDraft] = useState<AccessDraft>(null);
+  const { notify } = useToast();
 
   const filtered = useMemo(() => {
     const search = query.trim().toLocaleLowerCase();
@@ -61,7 +63,7 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
     const { data, error } = await createClient().rpc("list_members_for_management");
     if (error) throw new Error(error.message);
     setMembers(data || []);
-    if (announce) setMessage(`${data?.length || 0} member accounts loaded.`);
+    if (announce) { setMessage(""); notify(`${data?.length || 0} member accounts loaded.`); }
   }
 
   async function loadRecord(member: ManagedMember) {
@@ -81,7 +83,7 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
   async function refreshSelected(success: string) {
     await loadMembers(false);
     if (selected) await loadRecord(selected);
-    setMessage(success); setDetailMessage(success);
+    setMessage(""); setDetailMessage(""); notify(success, "success");
   }
 
   function confirmAccess(member: ManagedMember, action: AccessAction, reason: string) {
@@ -93,7 +95,7 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
         const { error } = await createClient().rpc("set_member_access_state", { p_member_id: member.id, p_action: action, p_reason: reason });
         if (error) throw new Error(error.message);
         await loadMembers(false);
-        setMessage(`${member.full_name || member.email} has been ${action === "suspend" ? "suspended" : "reactivated"}.`);
+        setMessage(""); notify(`${member.full_name || member.email} has been ${action === "suspend" ? "suspended" : "reactivated"}.`, "success");
       },
     });
   }
@@ -102,12 +104,12 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
     if (!confirmation) return;
     setPending(true);
     try { await confirmation.run(); setConfirmation(null); }
-    catch (error) { setMessage(error instanceof Error ? error.message : "The action could not be completed."); }
+    catch (error) { setMessage(""); notify(error instanceof Error ? error.message : "The action could not be completed.", "error"); }
     finally { setPending(false); }
   }
 
   async function exportCsv() {
-    if (!filtered.length) { setMessage("There are no matching members to export."); return; }
+    if (!filtered.length) { notify("There are no matching members to export.", "warning"); return; }
     setPending(true); setMessage("Preparing the filtered member directory…");
     try {
       const { data, error } = await createClient().rpc("export_members_for_management");
@@ -119,8 +121,8 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
       const csv = [headings.map(csvCell).join(","), ...selectedRows.map((row) => [row.member_number, row.full_name, row.email, label(row.membership_state), row.account_created_at ? dateTime(row.account_created_at) : "", row.locality, row.profession, row.industry].map(csvCell).join(","))].join("\r\n");
       const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
       const link = document.createElement("a"); link.href = url; link.download = `one-club-member-directory-${new Date().toISOString().slice(0, 10)}.csv`; link.click(); URL.revokeObjectURL(url);
-      setMessage(`${selectedRows.length} filtered member ${selectedRows.length === 1 ? "record" : "records"} exported.`);
-    } catch (error) { setMessage(error instanceof Error ? error.message : "The directory could not be exported."); }
+      setMessage(""); notify(`${selectedRows.length} filtered member ${selectedRows.length === 1 ? "record" : "records"} exported.`, "success");
+    } catch (error) { setMessage(""); notify(error instanceof Error ? error.message : "The directory could not be exported.", "error"); }
     finally { setPending(false); }
   }
 
@@ -130,7 +132,7 @@ export function MemberAdministrationWorkspace({ initialMembers, initialError, is
       <label>Membership state<select value={stateFilter} onChange={(event) => { setStateFilter(event.target.value); setPage(1); }}><option value="all">All states</option><option value="active">Active</option><option value="payment_pending">Payment pending</option><option value="suspended">Suspended</option><option value="expired">Expired</option><option value="cancelled">Cancelled</option><option value="none">No membership</option></select></label>
       <label>Sort by<select value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="member-number">Member ID</option><option value="state">Membership state</option></select></label>
     </div>
-    <div className="staff-toolbar member-summary-next"><p className="form-message" aria-live="polite">{message || `${filtered.length} members shown.`}</p><div><button className="button button-secondary" type="button" disabled={pending} onClick={() => { setQuery(""); setStateFilter("all"); setSort("name"); setPage(1); }}>Clear filters</button><button className="button button-secondary" type="button" disabled={pending} onClick={exportCsv}>Export CSV</button><button className="button button-secondary" type="button" disabled={pending} onClick={() => loadMembers().catch((error) => setMessage(error.message))}>Refresh</button></div></div>
+    <div className="staff-toolbar member-summary-next"><p className="form-message" aria-live="polite">{message || `${filtered.length} members shown.`}</p><div><button className="button button-secondary" type="button" disabled={pending} onClick={() => { setQuery(""); setStateFilter("all"); setSort("name"); setPage(1); }}>Clear filters</button><button className="button button-secondary" type="button" disabled={pending} onClick={exportCsv}>Export CSV</button><button className="button button-secondary" type="button" disabled={pending} onClick={() => loadMembers().catch((error) => notify(error.message, "error"))}>Refresh</button></div></div>
     <div className="member-list-next">{visible.length ? visible.map((member) => <MemberCard key={member.id} member={member} onView={() => loadRecord(member)} onAccess={(action) => setAccessDraft({ member, action })} />) : <p className="staff-empty">No members match the selected filters.</p>}</div>
     {filtered.length > PAGE_SIZE && <nav className="member-pagination-next" aria-label="Member directory pages"><button className="button button-secondary" type="button" disabled={currentPage <= 1} onClick={() => setPage(Math.max(1, currentPage - 1))}>Previous</button><span>Page {currentPage} of {pages}</span><button className="button button-secondary" type="button" disabled={currentPage >= pages} onClick={() => setPage(Math.min(pages, currentPage + 1))}>Next</button></nav>}
     <DetailDialog open={Boolean(selected)} onClose={() => setSelected(null)}><div className="member-detail-panel-next"><button className="member-dialog-close-next" type="button" onClick={() => setSelected(null)} aria-label="Close member record">×</button><p className="eyebrow compact">MEMBER RECORD</p><h2>{record?.full_name || selected?.full_name || "Member"}</h2><p className="member-detail-email-next">{record?.email || selected?.email}</p><p className="form-message" aria-live="polite">{detailMessage}</p>{record && <MemberRecord record={record} control={control} isAdministrator={isAdministrator} pending={pending} setPending={setPending} setConfirmation={setConfirmation} refresh={refreshSelected} />}</div></DetailDialog>
@@ -200,3 +202,4 @@ function availableActions(control: MembershipControl): { value: MembershipAction
   if (renewalDay) options.push({ value: "offline", label: "Record offline renewal payment" });
   return options;
 }
+

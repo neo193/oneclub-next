@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast-provider";
 import type { Profile } from "@/types/database";
 
 export function MemberSupportForm({
@@ -24,6 +25,7 @@ export function MemberSupportForm({
   const [statusText, setStatusText] = useState<string>("");
   const [pending, setPending] = useState<boolean>(false);
   const [deletionEscalation, setDeletionEscalation] = useState(false);
+  const { notify } = useToast();
 
   useEffect(()=>{if(!deletionContext)return;void (async()=>{const {data}=await createClient().rpc("validate_account_deletion_support_context",{p_context:deletionContext});if(data){setDeletionEscalation(true);setCategory("account_deletion");setMessage("Please expedite the unresolved refund(s) so I can delete my account.\n\n");}})();},[deletionContext]);
 
@@ -43,9 +45,12 @@ export function MemberSupportForm({
       if (error) throw new Error(error.message);
 
       setStatusText(`Support request submitted. Reference: ${data || "Logged"}. Our team will respond shortly.`);
+      notify("Support request submitted successfully.", "success");
       setMessage("");
     } catch (err) {
-      setStatusText(err instanceof Error ? err.message : "Could not submit your request. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Could not submit your request. Please try again.";
+      setStatusText(errorMessage);
+      notify(errorMessage, "error");
     } finally {
       setPending(false);
     }

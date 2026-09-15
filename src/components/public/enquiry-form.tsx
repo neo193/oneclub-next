@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { publicSupabaseEnvironment } from "@/lib/env/public";
+import { useToast } from "@/components/ui/toast-provider";
 
 export function EnquiryForm() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const { notify } = useToast();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,7 +25,7 @@ export function EnquiryForm() {
     }
 
     setSubmitting(true);
-    setMessage("Submitting your enquiry…");
+    setMessage("");
 
     try {
       const environment = publicSupabaseEnvironment();
@@ -37,10 +39,10 @@ export function EnquiryForm() {
         if (String(result?.message ?? "").includes("recently submitted")) throw new Error("duplicate");
         throw new Error("failed");
       }
-      setMessage(`Thank you. Enquiry ${String(result).slice(0, 8).toUpperCase()} has been received.`);
+      notify(`Thank you. Enquiry ${String(result).slice(0, 8).toUpperCase()} has been received.`, "success");
       form.reset();
     } catch (error) {
-      setMessage(error instanceof Error && error.message === "duplicate" ? "An enquiry for this email was submitted recently. Our team will be in touch." : "We could not submit your enquiry. Please try again shortly.");
+      notify(error instanceof Error && error.message === "duplicate" ? "An enquiry for this email was submitted recently. Our team will be in touch." : "We could not submit your enquiry. Please try again shortly.", error instanceof Error && error.message === "duplicate" ? "warning" : "error");
     } finally {
       setSubmitting(false);
     }
@@ -48,4 +50,5 @@ export function EnquiryForm() {
 
   return <form className="contact-form" onSubmit={submit}><div className="form-heading"><span>Contact details</span><h3>Tell us how to reach you.</h3></div><label>Full Name<input name="name" autoComplete="name" required /></label><label>Email Address<input type="email" name="email" autoComplete="email" required /></label><label>Phone Number<input type="tel" name="phone" autoComplete="tel" required placeholder="+91" /></label><label className="consent-row"><input type="checkbox" name="termsAccepted" value="yes" required /><span>I agree to the <Link href="/terms">Terms</Link> and acknowledge the <Link href="/privacy">Privacy Notice</Link>.</span></label><label className="consent-row"><input type="checkbox" name="marketingConsent" value="yes" /><span>I would like occasional One Club updates. Optional.</span></label><button className="button button-primary" type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Submit Enquiry"}</button><p className="form-message" aria-live="polite">{message}</p></form>;
 }
+
 

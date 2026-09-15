@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { callRazorpayService } from "@/lib/payments/razorpay";
+import { useToast } from "@/components/ui/toast-provider";
 import type { AdminRefund } from "@/types/database";
 
 const money = (paise: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(paise / 100);
@@ -14,6 +15,7 @@ export function RefundsWorkspace({ initialRefunds, initialError }: { initialRefu
   const [message, setMessage] = useState(initialError || `${initialRefunds.filter((row) => row.refund_status !== "processed").length} refunds require attention.`);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [issueTarget, setIssueTarget] = useState<AdminRefund | null>(null);
+  const { notify } = useToast();
 
   async function load() {
     const supabase = createClient();
@@ -27,10 +29,11 @@ export function RefundsWorkspace({ initialRefunds, initialError }: { initialRefu
     setMessage(action === "refund_issue" ? "Issuing the full refund securely…" : "Checking Razorpay for an existing refund…");
     try {
       const result = await callRazorpayService({ action, booking_id: refund.booking_id });
-      setMessage(action === "refund_reconcile" && !result.reconciled ? "No matching full refund was found in Razorpay." : `Refund ${friendly(String(result.status || "pending"))}. Reference: ${String(result.refund_id || "pending")}`);
+      const resultMessage = action === "refund_reconcile" && !result.reconciled ? "No matching full refund was found in Razorpay." : `Refund ${friendly(String(result.status || "pending"))}. Reference: ${String(result.refund_id || "pending")}`;
+      setMessage(""); notify(resultMessage, result.reconciled || action === "refund_issue" ? "success" : "warning", 8000);
       await load(); setIssueTarget(null);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Refund operation failed.");
+      setMessage(""); notify(error instanceof Error ? error.message : "Refund operation failed.", "error");
     } finally { setPendingId(null); }
   }
 
@@ -61,3 +64,4 @@ export function RefundsWorkspace({ initialRefunds, initialError }: { initialRefu
     </div>
   );
 }
+

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useToast } from "@/components/ui/toast-provider";
 import type { StaffEnquiry } from "@/types/database";
 
 function formatDate(value: string) {
@@ -17,24 +18,25 @@ export function InvitationsWorkspace({
   initialError: string;
 }) {
   const [enquiries, setEnquiries] = useState(initialEnquiries);
-  const [message, setMessage] = useState(initialError || `${initialEnquiries.length} enquiries loaded.`);
+  const [message, setMessage] = useState(initialError);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [invitationLinks, setInvitationLinks] = useState<Record<string, string>>({});
   const [menuId, setMenuId] = useState<string | null>(null);
   const [rejectTarget, setRejectTarget] = useState<StaffEnquiry | null>(null);
+  const { notify } = useToast();
 
   async function load() {
-    setMessage("Refreshing enquiries…");
+    setMessage("");
     const supabase = createClient();
     const { data, error } = await supabase.rpc("list_enquiries_for_staff");
     if (error) throw new Error(error.message);
     setEnquiries(data || []);
-    setMessage(`${data?.length || 0} enquiries loaded.`);
+    notify(`${data?.length || 0} enquiries loaded.`);
   }
 
   async function approve(enquiry: StaffEnquiry) {
     setPendingId(enquiry.id);
-    setMessage(`Generating an invitation for ${enquiry.full_name}…`);
+    setMessage("");
     try {
       const supabase = createClient();
       const { data: token, error } = await supabase.rpc("approve_enquiry_and_create_invitation", { p_enquiry_id: enquiry.id });
@@ -43,9 +45,9 @@ export function InvitationsWorkspace({
       url.searchParams.set("token", token);
       setInvitationLinks((links) => ({ ...links, [enquiry.id]: url.href }));
       setEnquiries((rows) => rows.map((row) => row.id === enquiry.id ? { ...row, status: "approved" } : row));
-      setMessage("Invitation generated. Copy the secure link and send it to the approved email address.");
+      notify("Invitation generated. Copy the secure link and send it to the approved email address.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Invitation could not be generated.");
+      notify(error instanceof Error ? error.message : "Invitation could not be generated.", "error");
     } finally {
       setPendingId(null);
     }
@@ -55,13 +57,13 @@ export function InvitationsWorkspace({
     const link = invitationLinks[id];
     if (!link) return;
     await navigator.clipboard.writeText(link);
-    setMessage("Invitation link copied.");
+    notify("Invitation link copied.", "success");
   }
 
   async function reissueAndCopy(enquiry: StaffEnquiry) {
     setMenuId(null);
     setPendingId(enquiry.id);
-    setMessage(`Creating a fresh approval link for ${enquiry.full_name}…`);
+    setMessage("");
     try {
       const supabase = createClient();
       const { data: token, error } = await supabase.rpc("reissue_enquiry_invitation", { p_enquiry_id: enquiry.id });
@@ -70,9 +72,9 @@ export function InvitationsWorkspace({
       url.searchParams.set("token", token);
       await navigator.clipboard.writeText(url.href);
       setInvitationLinks((links) => ({ ...links, [enquiry.id]: url.href }));
-      setMessage("A fresh approval link was copied. Any earlier unused link has been replaced.");
+      notify("A fresh approval link was copied. Any earlier unused link has been replaced.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The approval link could not be copied.");
+      notify(error instanceof Error ? error.message : "The approval link could not be copied.", "error");
     } finally {
       setPendingId(null);
     }
@@ -82,7 +84,7 @@ export function InvitationsWorkspace({
     if (!rejectTarget) return;
     const enquiry = rejectTarget;
     setPendingId(enquiry.id);
-    setMessage(`Rejecting the enquiry from ${enquiry.full_name}…`);
+    setMessage("");
     try {
       const supabase = createClient();
       const { error } = await supabase.rpc("reject_enquiry", { p_enquiry_id: enquiry.id });
@@ -95,9 +97,9 @@ export function InvitationsWorkspace({
       });
       setRejectTarget(null);
       setMenuId(null);
-      setMessage(`The enquiry from ${enquiry.full_name} was rejected.`);
+      notify(`The enquiry from ${enquiry.full_name} was rejected.`, "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "The enquiry could not be rejected.");
+      notify(error instanceof Error ? error.message : "The enquiry could not be rejected.", "error");
     } finally {
       setPendingId(null);
     }
@@ -106,9 +108,10 @@ export function InvitationsWorkspace({
   return (
     <div className="staff-workspace">
       <div className="staff-toolbar">
-        <p className="form-message" aria-live="polite">{message}</p>
-        <button className="button button-secondary" type="button" onClick={() => load().catch((error) => setMessage(error.message))}>Refresh</button>
+        <p>{enquiries.length} enquiries</p>
+        <button className="button button-secondary" type="button" onClick={() => load().catch((error) => notify(error.message, "error"))}>Refresh</button>
       </div>
+      {message && <p className="form-message" role="alert">{message}</p>}
       <div className="enquiry-list">
         {enquiries.length === 0 ? <p className="staff-empty">No membership enquiries are currently waiting.</p> : enquiries.map((enquiry) => (
           <article className="enquiry-card" key={enquiry.id}>

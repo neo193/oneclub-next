@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { useToast } from "@/components/ui/toast-provider";
 import { reconcilePayment, startRazorpayPayment } from "@/lib/payments/razorpay";
 import type { MemberEvent, MyEventBooking } from "@/types/database";
 
@@ -44,6 +45,7 @@ export function EventBookingView({
   const [actionPending, setActionPending] = useState<boolean>(false);
   const [cancelTarget, setCancelTarget] = useState<MyEventBooking | null>(null);
   const [bookingPage, setBookingPage] = useState(1);
+  const { notify } = useToast();
   const pageSize = 5;
 
   // Per-event guest state tracker: map of eventId -> array of guest names
@@ -92,7 +94,7 @@ export function EventBookingView({
   async function handleBookingSubmit(event: FormEvent<HTMLFormElement>, eventItem: MemberEvent) {
     event.preventDefault();
     setActionPending(true);
-    setMessage(`Reserving place for ${eventItem.title}…`);
+    setMessage("");
 
     const rawGuests = guestInputs[eventItem.id] || [];
     const guests = rawGuests.map((g) => g.trim()).filter(Boolean);
@@ -106,13 +108,13 @@ export function EventBookingView({
 
       if (error) throw new Error(error.message);
 
-      setMessage("Booking places reserved. You can review your booking below.");
+      notify("Booking places reserved. You can review your booking below.", "success");
       setActiveTab("pending_payment");
       // Clear inputs for this event
       setGuestInputs({ ...guestInputs, [eventItem.id]: [] });
       await reloadData();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "We could not complete your booking.");
+      notify(err instanceof Error ? err.message : "We could not complete your booking.", "error");
     } finally {
       setActionPending(false);
     }
@@ -120,7 +122,7 @@ export function EventBookingView({
 
   async function handleCancelBooking(bookingId: string) {
     setActionPending(true);
-    setMessage("Processing booking cancellation…");
+    setMessage("");
 
     try {
       const supabase = createClient();
@@ -130,15 +132,16 @@ export function EventBookingView({
 
       if (error) throw new Error(error.message);
 
-      setMessage(
+      notify(
         data === "refund_pending"
           ? "Booking cancelled. Refund request is pending."
-          : "Booking cancelled successfully."
+          : "Booking cancelled successfully.",
+        data === "refund_pending" ? "warning" : "success"
       );
       await reloadData();
       setCancelTarget(null);
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to cancel booking.");
+      notify(err instanceof Error ? err.message : "Failed to cancel booking.", "error");
     } finally {
       setActionPending(false);
     }
@@ -150,14 +153,14 @@ export function EventBookingView({
       const completed = await startRazorpayPayment({
         purpose: "event",
         bookingId: booking.booking_id,
-        onStatus: setMessage,
+        onStatus: (status) => { if (/verified successfully/i.test(status)) notify(status, "success"); },
       });
       if (completed) {
         await reloadData();
         setActiveTab("confirmed");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "We could not complete the payment.");
+      notify(error instanceof Error ? error.message : "We could not complete the payment.", "error");
     } finally {
       setActionPending(false);
     }
@@ -169,7 +172,7 @@ export function EventBookingView({
       try {
         for (const booking of initialBookings) {
           if (booking.status === "pending_payment" && await reconcilePayment("event", booking.booking_id)) {
-            if (active) setMessage("A captured event payment was recovered and confirmed.");
+            if (active) notify("A captured event payment was recovered and confirmed.", "success");
             break;
           }
         }
@@ -180,7 +183,7 @@ export function EventBookingView({
           await reloadData();
         }
       } catch (error) {
-        if (active) setMessage(error instanceof Error ? error.message : "Bookings could not be refreshed.");
+        if (active) notify(error instanceof Error ? error.message : "Bookings could not be refreshed.", "error");
       }
     }
     void recoverAndExpire();
@@ -439,4 +442,5 @@ export function EventBookingView({
     </div>
   );
 }
+
 

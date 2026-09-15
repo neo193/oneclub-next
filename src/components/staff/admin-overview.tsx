@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast-provider";
 import type { Json } from "@/types/database";
 
 type MetricGroup = Record<string, string | number | boolean | null>;
@@ -29,18 +30,18 @@ function asOverview(value: Json | null): OverviewData {
 
 export function AdminOverview({ initialData, initialError }: { initialData: Json | null; initialError: string }) {
   const [data, setData] = useState(() => asOverview(initialData));
-  const [message, setMessage] = useState(initialError || "Business overview current.");
+  const { notify } = useToast();
   const [pending, setPending] = useState(false);
 
   async function refresh() {
-    setPending(true); setMessage("Refreshing business overview…");
+    setPending(true);
     try {
       const supabase = createClient();
       const { data: result, error } = await supabase.rpc("get_technical_diagnostics");
       if (error) throw new Error(error.message);
-      setData(asOverview(result)); setMessage("Business overview refreshed.");
+      setData(asOverview(result)); notify("Business overview refreshed.", "success");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Overview refresh failed.");
+      notify(error instanceof Error ? error.message : "Overview refresh failed.", "error");
     } finally { setPending(false); }
   }
 
@@ -50,7 +51,7 @@ export function AdminOverview({ initialData, initialError }: { initialData: Json
         <div><strong>Overview current</strong><p>{data.checked_at ? `Last checked ${new Date(data.checked_at).toLocaleString("en-IN")}` : "No check time available"}</p></div>
         <button className="button button-secondary" type="button" disabled={pending} onClick={refresh}>{pending ? "Refreshing…" : "Refresh"}</button>
       </div>
-      <p className="form-message" aria-live="polite">{message}</p>
+      {initialError && <p className="form-message" role="alert">{initialError}</p>}
       <div className="overview-grid-next">
         {groups.map(([key, title], index) => {
           const metrics = data[key] as MetricGroup | undefined;
@@ -72,3 +73,4 @@ export function AdminOverview({ initialData, initialError }: { initialData: Json
     </div>
   );
 }
+
