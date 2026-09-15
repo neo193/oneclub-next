@@ -77,6 +77,9 @@ export type Database = {
       get_membership_purchase_options: { Args: Record<string, never>; Returns: { annual_price_paise:number; founding_price_paise:number; active_annual_credit_paise:number; founding_payable_paise:number; founding_places_remaining:number; is_upgrade:boolean } };
       get_available_membership_tiers: { Args: Record<string, never>; Returns: PurchasableMembershipTier[] };
       get_eligible_membership_upgrades: { Args: Record<string, never>; Returns: PurchasableMembershipTier[] };
+      get_my_business_profile: { Args: Record<string, never>; Returns: BusinessProfile | null };
+      save_my_business_profile: { Args: { p_display_name:string;p_business_name:string;p_role_title:string;p_industry:string;p_city:string;p_summary:string;p_interests:string[];p_website_url:string;p_linkedin_url:string;p_publish:boolean }; Returns:void };
+      search_business_directory: { Args: { p_query?:string|null;p_industry?:string|null;p_role?:string|null;p_interest?:string|null;p_limit?:number }; Returns:BusinessDirectoryResult[] };
       get_published_membership_slots_for_admin: { Args: Record<string, never>; Returns: MembershipTierSlot[] };
       list_membership_tiers_for_admin: { Args: Record<string, never>; Returns: ManagedMembershipTier[] };
       save_membership_tier: { Args: { p_id:string|null;p_name:string;p_description:string;p_classification:"standard"|"premium";p_price_paise:number;p_validity_months:number|null;p_allocation_limit:number|null;p_upgrades_enabled:boolean;p_active_term_credit_enabled:boolean }; Returns:string };
@@ -363,3 +366,5 @@ export type ManagedEvent = Database["public"]["Functions"]["list_events_for_mana
 export type MembershipTierSlot={id?:string;display_slot:number;name?:string;price_paise?:number;validity_months?:number|null;allocation_limit?:number|null;allocated?:number;empty:boolean};
 export type ManagedMembershipTier={id:string;code:string;name:string;description:string;classification:"standard"|"premium";price_paise:number;validity_months:number|null;allocation_limit:number|null;allocated:number;status:"draft"|"published"|"sold_out"|"retired"|"archived";display_slot:number|null;upgrades_enabled:boolean;active_term_credit_enabled:boolean;published_at:string|null;retired_at:string|null;created_at:string};
 export type PurchasableMembershipTier={id:string;name:string;description:string;price_paise:number;validity_months:number|null;places_remaining:number|null;credit_paise?:number;payable_paise?:number};
+export type BusinessProfile={member_id:string;display_name:string;business_name:string;role_title:string;industry:string;city:string|null;summary:string;interests:string[];website_url:string|null;linkedin_url:string|null;status:"draft"|"published";published_at:string|null;created_at:string;updated_at:string};
+export type BusinessDirectoryResult=Pick<BusinessProfile,"member_id"|"business_name"|"role_title"|"industry"|"city"|"summary"|"interests"|"website_url"|"linkedin_url">&{member_name:string|null};

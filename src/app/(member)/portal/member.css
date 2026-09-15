@@ -512,6 +512,28 @@
 /* Profile Editor */
 .membership-choice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; width:100%; margin-top:24px; }
 .membership-choice-grid.membership-upgrade-choice { grid-template-columns:minmax(0,760px); justify-content:center; }
+.business-profile-editor { margin-top:32px; }
+.business-profile-status { display:flex; align-items:center; gap:14px; margin-bottom:24px; padding:16px 18px; border:1px solid var(--line); }
+.business-profile-status p { margin:0; color:var(--muted); }
+.business-profile-actions { display:flex; flex-wrap:wrap; gap:12px; }
+.directory-heading-action { display:flex; align-items:center; justify-content:space-between; gap:24px; margin:32px 0 22px; padding:18px 20px; border:1px solid var(--line); }
+.directory-heading-action p { margin:0; color:var(--muted); }
+.directory-search { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)) auto; align-items:end; gap:14px; padding:22px; border:1px solid var(--line); background:rgba(255,255,255,.008); }
+.directory-search label { display:grid; gap:8px; color:var(--gold-light); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+.directory-search label.wide { grid-column:1/-1; }
+.directory-search input { width:100%; min-height:48px; padding:0 14px; border:1px solid var(--line); background:transparent; color:var(--cream); }
+.directory-result-count { margin:22px 0 12px; color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+.business-directory-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.business-directory-card { display:flex; min-height:330px; flex-direction:column; padding:25px; border:1px solid var(--line); background:linear-gradient(145deg,rgba(185,154,98,.045),transparent 55%); }
+.business-directory-card h2 { margin:20px 0 5px; font-size:30px; }
+.business-directory-card h3 { margin:0 0 5px; color:var(--gold-light); font-size:15px; font-weight:400; }
+.business-directory-card small { color:var(--muted); }
+.business-directory-card > p:not(.eyebrow) { color:var(--muted); line-height:1.65; }
+.directory-tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:auto; padding-top:18px; }
+.directory-tags span { padding:6px 9px; border:1px solid var(--line); color:var(--gold-light); font-size:10px; }
+.directory-links { display:flex; gap:18px; margin-top:18px; }
+.directory-links a { color:var(--cream); font-size:11px; letter-spacing:.08em; text-decoration:underline; text-underline-offset:4px; text-transform:uppercase; }
+.directory-gate { margin-top:36px; }
 .membership-choice { display:flex; min-height:274px; flex-direction:column; align-items:flex-start; gap:14px; padding:24px; border:1px solid var(--line); background:transparent; transition:border-color .2s ease,background-color .2s ease,transform .2s ease; }
 .membership-choice:hover,
 .membership-choice:focus-within { border-color:rgba(185,154,98,.8); background:rgba(185,154,98,.08); transform:translateY(-2px); }
@@ -662,6 +684,9 @@
 
 @media (max-width: 700px) {
   .membership-choice-grid { grid-template-columns:1fr; }
+  .business-directory-grid,.directory-search { grid-template-columns:1fr; }
+  .directory-search label.wide { grid-column:auto; }
+  .directory-heading-action,.business-profile-status { align-items:flex-start; flex-direction:column; }
   .portal-shell,
   .member-page {
     padding-top: 42px;

@@ -8,6 +8,7 @@ const navigation = [
   { href: "/portal", label: "My Portal" },
   { href: "/portal/benefits", label: "Benefits" },
   { href: "/portal/events", label: "Events" },
+  { href: "/portal/directory", label: "Directory" },
   { href: "/portal/profile", label: "Profile" },
   { href: "/portal/support", label: "Support" },
 ];
