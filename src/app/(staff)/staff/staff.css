@@ -514,17 +514,25 @@
   .multi-location-action-next { align-items: stretch; flex-direction: column; }
   .multi-location-action-next .button { width: 100%; }
 }
-.membership-pricing-control { margin:36px 0; padding:28px; border:1px solid var(--line); }
+.membership-pricing-control { margin:36px 0; padding:28px; border:1px solid var(--line); background:linear-gradient(145deg,rgba(185,154,98,.035),transparent 46%); }
 .staff-section-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:22px; }
 .staff-section-heading h2 { margin:8px 0 0; font-size:32px; }
 .membership-slot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
-.membership-slot-card { display:flex; min-height:230px; flex-direction:column; align-items:flex-start; padding:24px; border:1px solid var(--line); }
-.membership-slot-card h3 { margin:24px 0 10px; font-size:28px; }
-.membership-slot-card strong { font-size:24px; font-weight:400; }
-.membership-slot-card .text-button { margin-top:auto; }
+.membership-slot-card { position:relative; display:flex; min-height:250px; flex-direction:column; align-items:flex-start; overflow:hidden; padding:26px; border:1px solid var(--line); background:linear-gradient(135deg,rgba(185,154,98,.07),rgba(255,255,255,.008) 55%); }
+.membership-slot-card::before { position:absolute; inset:0 auto 0 0; width:2px; background:linear-gradient(var(--gold),transparent 80%); content:""; }
+.membership-slot-card h3 { margin:26px 0 10px; color:var(--cream); font-size:29px; }
+.membership-slot-card strong { color:var(--gold-light); font-family:var(--font-display); font-size:31px; font-weight:400; }
+.membership-slot-card small { color:var(--muted); }
+.membership-slot-validity { margin:7px 0; color:var(--cream); }
+.membership-slot-edit { align-self:flex-end; margin-top:auto; }
 .membership-slot-card.empty { justify-content:center; align-items:center; text-align:center; }
-.tier-admin-layout { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr); gap:24px; }
-.tier-admin-list { display:grid; gap:14px; }
-.tier-admin-card { padding:22px; border:1px solid var(--line); }
+.tier-admin-layout { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr); align-items:start; gap:24px; }
+.tier-admin-list { display:grid; grid-auto-rows:max-content; align-content:start; gap:14px; }
+.tier-admin-card { min-height:0; padding:22px; border:1px solid var(--line); background:rgba(255,255,255,.008); }
+.tier-admin-card h2 { margin:12px 0 7px; font-size:25px; }
+.tier-admin-card p { margin:0 0 8px; color:var(--cream); }
+.tier-admin-card small { color:var(--muted); }
 .tier-admin-card > div { display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
+.tier-admin-layout .event-form-next label:has(> input[type="checkbox"]) { display:flex; flex-direction:row; align-items:center; gap:10px; }
+.tier-admin-layout .event-form-next input[type="checkbox"] { width:18px; height:18px; min-height:0; margin:0; padding:0; accent-color:var(--gold); }
 @media(max-width:800px){.membership-slot-grid,.tier-admin-layout{grid-template-columns:1fr}.staff-section-heading{align-items:flex-start;flex-direction:column}.membership-pricing-control{padding:20px}}
