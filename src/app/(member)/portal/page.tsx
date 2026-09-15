@@ -99,8 +99,8 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
                 <> Offer valid until <strong>{new Date(profile.payment_offer_expires_at).toLocaleDateString()}</strong>.</>
               )}
             </p>
-            <div className="portal-actions">
-              {purchaseOptions && <MembershipPayment email={email} options={purchaseOptions} />}
+            {purchaseOptions && <MembershipPayment email={email} options={purchaseOptions} />}
+            <div className="portal-actions membership-secondary-actions">
               <Button href="/portal/profile" variant="secondary">
                 Edit my profile
               </Button>
