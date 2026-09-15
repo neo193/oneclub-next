@@ -42,7 +42,7 @@ export function MembershipPayment({ email, tiers, mode = "purchase" }: { email: 
   }
 
   return (
-    <div className="membership-choice-grid">
+    <div className={`membership-choice-grid${mode === "upgrade" ? " membership-upgrade-choice" : ""}`}>
       {tiers.map((tier) => {
         const price = tier.payable_paise ?? tier.price_paise;
         const unavailable = tier.places_remaining === 0;
