@@ -174,6 +174,14 @@ export type Database = {
         Args: { p_enquiry_id: string };
         Returns: string;
       };
+      reject_enquiry: {
+        Args: { p_enquiry_id: string };
+        Returns: void;
+      };
+      reissue_enquiry_invitation: {
+        Args: { p_enquiry_id: string };
+        Returns: string;
+      };
       list_support_requests_for_staff: {
         Args: { p_status?: string | null };
         Returns: {
