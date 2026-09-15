@@ -652,6 +652,15 @@ h1 {
   color: var(--cream);
   font: inherit;
 }
+.password-input { position: relative; display: block; width: 100%; }
+.password-input input { padding-right: 50px; }
+.password-visibility { position: absolute; top: 50%; right: 7px; display: grid; width: 38px; height: 38px; padding: 8px; place-items: center; border: 0; background: transparent; color: var(--muted); cursor: pointer; transform: translateY(-50%); }
+.password-visibility:hover,
+.password-visibility:focus-visible { color: var(--gold-light); outline: 1px solid var(--line-strong); }
+.password-visibility svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.contact-form .password-input input,
+.invite-signup .password-input input,
+.deletion-confirm-field .password-input input { padding-right: 50px; }
 .contact-form input,
 .contact-form select {
   min-height: 49px;

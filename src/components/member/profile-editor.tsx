@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { useToast } from "@/components/ui/toast-provider";
+import { PasswordInput } from "@/components/ui/password-input";
 import type { AccountDeletionEligibility } from "@/types/database";
 import type { Profile } from "@/types/database";
 
@@ -209,7 +210,7 @@ export function ProfileEditor({ profile, userEmail }: { profile: Profile; userEm
       </ConfirmationDialog>
       <ConfirmationDialog open={deletion==="confirm"} title="Permanently delete your account?" confirmLabel="Delete account" pending={pending} pendingLabel="Deleting…" onClose={()=>setDeletion(null)} onConfirm={deleteAccount}>
         <p>This cannot be undone. Your original email will be released for a new account, but the new account will not inherit this account&apos;s history.</p>
-        <label className="deletion-confirm-field">Current password<input type="password" autoComplete="current-password" value={password} onChange={event=>setPassword(event.target.value)} /></label>
+        <label className="deletion-confirm-field">Current password<PasswordInput autoComplete="current-password" value={password} onChange={event=>setPassword(event.target.value)} /></label>
         <label className="deletion-confirm-field">Type DELETE MY ACCOUNT<input value={deletePhrase} autoComplete="off" onChange={event=>setDeletePhrase(event.target.value)} /></label>
         {message&&<p className="form-message" aria-live="polite">{message}</p>}
       </ConfirmationDialog>
