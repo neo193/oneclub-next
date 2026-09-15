@@ -70,6 +70,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_membership_purchase_options: { Args: Record<string, never>; Returns: { annual_price_paise:number; founding_price_paise:number; active_annual_credit_paise:number; founding_payable_paise:number; founding_places_remaining:number; is_upgrade:boolean } };
       get_public_upcoming_event: {
         Args: Record<string, never>;
         Returns: { title: string; venue: string; description: string }[];
@@ -109,6 +110,8 @@ export type Database = {
           max_guests_per_member: number;
           pricing_model: "fixed_booking" | "per_person";
           seats_available: number;
+          audience: "all_members" | "founding_members";
+          can_book: boolean;
         }[];
       };
       create_event_booking: {
@@ -262,7 +265,7 @@ export type Database = {
           id: string; title: string; description: string; venue: string; starts_at: string;
           booking_closes_at: string; refund_cutoff_at: string; capacity: number; price_paise: number;
           max_guests_per_member: number; pricing_model: "per_person" | "fixed_booking";
-          status: "draft" | "published" | "cancelled" | "completed"; booked_seats: number; held_seats: number;
+          status: "draft" | "published" | "cancelled" | "completed"; booked_seats: number; held_seats: number; audience: "all_members" | "founding_members";
         }[];
       };
       save_event: {
@@ -270,6 +273,7 @@ export type Database = {
         Returns: string;
       };
       check_event_deletion: { Args: { p_id: string }; Returns: Json };
+      set_event_audience: { Args: { p_event_id: string; p_audience: "all_members" | "founding_members" }; Returns: void };
       delete_event: { Args: { p_id: string }; Returns: void };
       grant_complimentary_event_booking: { Args: { p_event_id: string; p_email: string; p_guest_names: string[]; p_reason: string }; Returns: string };
       list_partner_content_for_management: { Args: Record<string, never>; Returns: ManagedPartnerContent[] };
