@@ -25,10 +25,12 @@ export type Database = {
           membership_state: "none" | "active" | "payment_pending" | "suspended" | "expired" | "cancelled";
           member_number: string | null;
           founding_member_sequence: number | null;
-          membership_plan: "founding_lifetime" | "annual" | null;
+          membership_plan: string | null;
+          membership_tier_id: string | null;
           membership_started_at: string | null;
           membership_expires_at: string | null;
-          pending_membership_plan: "founding_lifetime" | "annual" | null;
+          pending_membership_plan: string | null;
+          pending_membership_tier_id: string | null;
           pending_membership_source: "razorpay" | "complimentary" | "offline" | "legacy" | null;
           membership_status_context: string | null;
           payment_offer_expires_at: string | null;
@@ -52,10 +54,12 @@ export type Database = {
           membership_state?: "none" | "active" | "payment_pending" | "suspended" | "expired" | "cancelled";
           member_number?: string | null;
           founding_member_sequence?: number | null;
-          membership_plan?: "founding_lifetime" | "annual" | null;
+          membership_plan?: string | null;
+          membership_tier_id?: string | null;
           membership_started_at?: string | null;
           membership_expires_at?: string | null;
-          pending_membership_plan?: "founding_lifetime" | "annual" | null;
+          pending_membership_plan?: string | null;
+          pending_membership_tier_id?: string | null;
           pending_membership_source?: "razorpay" | "complimentary" | "offline" | "legacy" | null;
           membership_status_context?: string | null;
           payment_offer_expires_at?: string | null;
@@ -71,6 +75,13 @@ export type Database = {
     Views: Record<string, never>;
     Functions: {
       get_membership_purchase_options: { Args: Record<string, never>; Returns: { annual_price_paise:number; founding_price_paise:number; active_annual_credit_paise:number; founding_payable_paise:number; founding_places_remaining:number; is_upgrade:boolean } };
+      get_available_membership_tiers: { Args: Record<string, never>; Returns: PurchasableMembershipTier[] };
+      get_eligible_membership_upgrades: { Args: Record<string, never>; Returns: PurchasableMembershipTier[] };
+      get_published_membership_slots_for_admin: { Args: Record<string, never>; Returns: MembershipTierSlot[] };
+      list_membership_tiers_for_admin: { Args: Record<string, never>; Returns: ManagedMembershipTier[] };
+      save_membership_tier: { Args: { p_id:string|null;p_name:string;p_description:string;p_classification:"standard"|"premium";p_price_paise:number;p_validity_months:number|null;p_allocation_limit:number|null;p_upgrades_enabled:boolean;p_active_term_credit_enabled:boolean }; Returns:string };
+      publish_membership_tier: { Args:{p_tier_id:string;p_display_slot:number};Returns:void };
+      retire_membership_tier: { Args:{p_tier_id:string};Returns:void };
       get_public_upcoming_event: {
         Args: Record<string, never>;
         Returns: { title: string; venue: string; description: string }[];
@@ -340,7 +351,7 @@ export type MemberAdminRecord = {
 export type MembershipControl = {
   member_id: string;
   membership_state: Profile["membership_state"];
-  plan: "founding_lifetime" | "annual" | null;
+  plan: string | null;
   founding_sequence: number | null;
   starts_at: string | null;
   expires_at: string | null;
@@ -349,4 +360,6 @@ export type MembershipControl = {
   terms: { id: string; plan: string; source: string; status: string; starts_at: string; expires_at: string | null; amount_paise: number | null; payment_method: string | null; transaction_reference: string | null; payment_received_at: string | null; reason: string | null; created_at: string }[];
 };
 export type ManagedEvent = Database["public"]["Functions"]["list_events_for_management"]["Returns"][number];
-
+export type MembershipTierSlot={id?:string;display_slot:number;name?:string;price_paise?:number;validity_months?:number|null;allocation_limit?:number|null;allocated?:number;empty:boolean};
+export type ManagedMembershipTier={id:string;code:string;name:string;description:string;classification:"standard"|"premium";price_paise:number;validity_months:number|null;allocation_limit:number|null;allocated:number;status:"draft"|"published"|"sold_out"|"retired"|"archived";display_slot:number|null;upgrades_enabled:boolean;active_term_credit_enabled:boolean;published_at:string|null;retired_at:string|null;created_at:string};
+export type PurchasableMembershipTier={id:string;name:string;description:string;price_paise:number;validity_months:number|null;places_remaining:number|null;credit_paise?:number;payable_paise?:number};

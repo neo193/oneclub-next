@@ -75,13 +75,13 @@ export async function startRazorpayPayment({
   purpose,
   bookingId,
   email,
-  membershipPlan,
+  membershipTierId,
   onStatus,
 }: {
   purpose: PaymentPurpose;
   bookingId?: string;
   email?: string;
-  membershipPlan?: "annual" | "founding_lifetime";
+  membershipTierId?: string;
   onStatus: (message: string) => void;
 }) {
   await loadCheckout();
@@ -91,7 +91,7 @@ export async function startRazorpayPayment({
     action: "create",
     purpose,
     booking_id: bookingId || null,
-    membership_plan: membershipPlan || null,
+    membership_tier_id: membershipTierId || null,
   })) as PaymentOrder;
 
   return new Promise<boolean>((resolve, reject) => {
@@ -141,4 +141,3 @@ export async function startRazorpayPayment({
     checkout.open();
   });
 }
-

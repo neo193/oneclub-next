@@ -6,6 +6,7 @@ import { MembershipPayment } from "@/components/member/membership-payment";
 import { PaymentCompletionNotice } from "@/components/member/payment-completion-notice";
 import { requireProfile } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
+import type { PurchasableMembershipTier } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Member Portal",
@@ -19,13 +20,16 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const email = String(claimsData?.claims?.email || "");
-  const { data: purchaseOptions } = await supabase.rpc("get_membership_purchase_options");
   const isActive = profile.membership_state === "active";
   const isPaymentPending = profile.membership_state === "payment_pending";
   const isSuspended = profile.membership_state === "suspended";
   const isInactive = ["none", "expired", "cancelled"].includes(profile.membership_state);
-  const pendingPlan = profile.pending_membership_plan || (profile.founding_member_sequence ? "founding_lifetime" : "annual");
-  const pendingPlanName = pendingPlan === "founding_lifetime" ? "Founding Membership" : "annual membership";
+  const { data: tiers } = isPaymentPending
+    ? await supabase.rpc("get_available_membership_tiers")
+    : isActive
+      ? await supabase.rpc("get_eligible_membership_upgrades")
+      : { data: [] as PurchasableMembershipTier[] };
+  const purchasableTiers = (tiers || []) as PurchasableMembershipTier[];
 
   return (
     <div className="section-shell">
@@ -81,8 +85,8 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
                   <Button href="/portal/profile" variant="secondary">
                     Edit my profile
                   </Button>
-                  {profile.membership_plan === "annual" && Number(purchaseOptions?.founding_places_remaining || 0) > 0 && (
-                    <Button href="/portal/membership/upgrade" variant="secondary">Upgrade to Founding</Button>
+                  {purchasableTiers.length > 0 && (
+                    <Button href="/portal/membership/upgrade" variant="secondary">Upgrade membership</Button>
                   )}
                 </div>
               </div>
@@ -94,12 +98,14 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
           <section className="portal-view">
             <h2>Membership payment pending</h2>
             <p>
-              Your {pendingPlanName} offer is ready. Complete the membership payment to activate your benefits.
+              Your membership offer is ready. Choose a tier and complete payment to activate your benefits.
               {profile.payment_offer_expires_at && (
                 <> Offer valid until <strong>{new Date(profile.payment_offer_expires_at).toLocaleDateString()}</strong>.</>
               )}
             </p>
-            {purchaseOptions && <MembershipPayment email={email} options={purchaseOptions} />}
+            {purchasableTiers.length > 0
+              ? <MembershipPayment email={email} tiers={purchasableTiers} />
+              : <p className="form-message">No membership tier is currently available. Please contact the membership desk.</p>}
             <div className="portal-actions membership-secondary-actions">
               <Button href="/portal/profile" variant="secondary">
                 Edit my profile
@@ -189,5 +195,4 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
     </div>
   );
 }
-
 

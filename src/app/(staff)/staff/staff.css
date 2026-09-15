@@ -514,4 +514,17 @@
   .multi-location-action-next { align-items: stretch; flex-direction: column; }
   .multi-location-action-next .button { width: 100%; }
 }
-
+.membership-pricing-control { margin:36px 0; padding:28px; border:1px solid var(--line); }
+.staff-section-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:22px; }
+.staff-section-heading h2 { margin:8px 0 0; font-size:32px; }
+.membership-slot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.membership-slot-card { display:flex; min-height:230px; flex-direction:column; align-items:flex-start; padding:24px; border:1px solid var(--line); }
+.membership-slot-card h3 { margin:24px 0 10px; font-size:28px; }
+.membership-slot-card strong { font-size:24px; font-weight:400; }
+.membership-slot-card .text-button { margin-top:auto; }
+.membership-slot-card.empty { justify-content:center; align-items:center; text-align:center; }
+.tier-admin-layout { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(320px,.6fr); gap:24px; }
+.tier-admin-list { display:grid; gap:14px; }
+.tier-admin-card { padding:22px; border:1px solid var(--line); }
+.tier-admin-card > div { display:flex; flex-wrap:wrap; gap:12px; margin-top:18px; }
+@media(max-width:800px){.membership-slot-grid,.tier-admin-layout{grid-template-columns:1fr}.staff-section-heading{align-items:flex-start;flex-direction:column}.membership-pricing-control{padding:20px}}

@@ -4,16 +4,16 @@ import { MembershipPayment } from "@/components/member/membership-payment";
 import { requireProfile } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Upgrade to Founding Membership", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Upgrade Membership", robots: { index: false, follow: false } };
 
 export default async function UpgradeMembershipPage() {
   const profile = await requireProfile("/portal/membership/upgrade");
-  if (profile.membership_state !== "active" || profile.membership_plan !== "annual") redirect("/portal");
+  if (profile.membership_state !== "active") redirect("/portal");
   const supabase = await createClient();
   const [{ data: options, error }, { data: claims }] = await Promise.all([
-    supabase.rpc("get_membership_purchase_options"), supabase.auth.getClaims(),
+    supabase.rpc("get_eligible_membership_upgrades"), supabase.auth.getClaims(),
   ]);
-  if (error || !options) throw new Error(error?.message || "Upgrade details are unavailable");
-  return <section className="section member-page"><p className="eyebrow"><span />LIMITED FOUNDING TIER</p><h1>Membership for a lifetime.</h1><p className="page-intro">Your current annual-term payment is credited once. Previous annual terms do not accumulate toward this upgrade.</p><MembershipPayment email={String(claims?.claims?.email || "")} options={options} /></section>;
+  if (error) throw new Error(error.message);
+  if (!options?.length) redirect("/portal");
+  return <section className="section member-page"><p className="eyebrow"><span />MEMBERSHIP UPGRADE</p><h1>Choose your next tier.</h1><p className="page-intro">Your current active-term payment may be credited when the selected tier permits it. Previous membership terms do not accumulate toward this upgrade.</p><MembershipPayment email={String(claims?.claims?.email || "")} tiers={options} mode="upgrade" /></section>;
 }
-

@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { reconcilePayment, startRazorpayPayment } from "@/lib/payments/razorpay";
 import { useToast } from "@/components/ui/toast-provider";
+import { reconcilePayment, startRazorpayPayment } from "@/lib/payments/razorpay";
+import type { PurchasableMembershipTier } from "@/types/database";
 
-type PurchaseOptions = { annual_price_paise:number;founding_payable_paise:number;active_annual_credit_paise:number;founding_places_remaining:number;is_upgrade:boolean };
-const money=(paise:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(paise/100);
-export function MembershipPayment({ email, options }: { email: string; options:PurchaseOptions }) {
-  const [pending, setPending] = useState(false);
+const money = (paise: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(paise / 100);
+
+export function MembershipPayment({ email, tiers, mode = "purchase" }: { email: string; tiers: PurchasableMembershipTier[]; mode?: "purchase" | "upgrade" }) {
+  const [pendingTierId, setPendingTierId] = useState<string | null>(null);
   const { notify } = useToast();
 
   useEffect(() => {
@@ -24,27 +25,39 @@ export function MembershipPayment({ email, options }: { email: string; options:P
     return () => { active = false; };
   }, [notify]);
 
-  async function pay(plan:"annual"|"founding_lifetime") {
-    setPending(true);
+  async function pay(tierId: string) {
+    setPendingTierId(tierId);
     try {
-      const completed = await startRazorpayPayment({ purpose: "membership", membershipPlan:plan, email, onStatus: () => undefined });
+      const completed = await startRazorpayPayment({ purpose: "membership", membershipTierId: tierId, email, onStatus: () => undefined });
       if (completed) {
-        notify("Payment successful. Activating your membership…", "success");
+        notify(mode === "upgrade" ? "Payment successful. Upgrading your membership…" : "Payment successful. Activating your membership…", "success");
         await new Promise((resolve) => window.setTimeout(resolve, 900));
         window.location.replace("/portal?payment=success");
       }
     } catch (error) {
       notify(error instanceof Error ? error.message : "We could not complete the payment.", "error");
     } finally {
-      setPending(false);
+      setPendingTierId(null);
     }
   }
 
   return (
     <div className="membership-choice-grid">
-      {!options.is_upgrade&&<article className="membership-choice"><p className="eyebrow compact">ANNUAL</p><h3>{money(options.annual_price_paise)}</h3><p>One year of membership and all standard benefits.</p><Button type="button" variant="secondary" disabled={pending} onClick={()=>pay("annual")}>Choose annual</Button></article>}
-      <article className="membership-choice"><p className="eyebrow compact">FOUNDING MEMBER</p><h3>{money(options.founding_payable_paise)}</h3><p>{options.is_upgrade?`${money(options.active_annual_credit_paise)} active-term credit applied. `:""}Lifetime membership and Founding Member events.</p><small>{options.founding_places_remaining} places remaining</small><Button type="button" variant="secondary" disabled={pending||!options.founding_places_remaining} onClick={()=>pay("founding_lifetime")}>{options.is_upgrade?"Complete upgrade":"Choose Founding"}</Button></article>
+      {tiers.map((tier) => {
+        const price = tier.payable_paise ?? tier.price_paise;
+        const unavailable = tier.places_remaining === 0;
+        return <article className="membership-choice" key={tier.id}>
+          <p className="eyebrow compact">{tier.name.toUpperCase()}</p>
+          <h3>{money(price)}</h3>
+          <p>{tier.description}</p>
+          <small>{tier.validity_months ? `${tier.validity_months} months` : "Lifetime validity"}</small>
+          {Boolean(tier.credit_paise) && <small>{money(tier.credit_paise || 0)} active-term credit applied</small>}
+          {tier.places_remaining !== null && <small>{tier.places_remaining} places remaining</small>}
+          <Button type="button" variant="secondary" disabled={pendingTierId !== null || unavailable} onClick={() => pay(tier.id)}>
+            {pendingTierId === tier.id ? "Preparing payment…" : mode === "upgrade" ? `Upgrade to ${tier.name}` : `Choose ${tier.name}`}
+          </Button>
+        </article>;
+      })}
     </div>
   );
 }
-
