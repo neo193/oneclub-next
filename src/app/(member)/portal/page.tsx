@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MemberCard } from "@/components/member/member-card";
 import { MembershipPayment } from "@/components/member/membership-payment";
+import { PaymentCompletionNotice } from "@/components/member/payment-completion-notice";
 import { requireProfile } from "@/lib/auth/profile";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function MemberPortalPage() {
+export default async function MemberPortalPage({ searchParams }: { searchParams: Promise<{ payment?: string }> }) {
+  const params = await searchParams;
   const profile = await requireProfile("/portal");
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -26,6 +28,7 @@ export default async function MemberPortalPage() {
 
   return (
     <div className="section-shell">
+      {params.payment === "success" && isActive && <PaymentCompletionNotice />}
       {/* Member Profile Overview Strip */}
       <section className="section portal-shell">
         <p className="eyebrow">
@@ -182,4 +185,5 @@ export default async function MemberPortalPage() {
     </div>
   );
 }
+
 
