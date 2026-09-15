@@ -514,6 +514,7 @@
 .membership-choice-grid.membership-upgrade-choice { grid-template-columns:minmax(0,760px); justify-content:center; }
 .business-profile-editor { margin-top:32px; }
 .business-profile-status { display:flex; align-items:center; gap:14px; margin-bottom:24px; padding:16px 18px; border:1px solid var(--line); }
+.business-profile-status .status-pill { display:inline-flex; align-items:center; min-height:20px; margin:0; line-height:1; }
 .business-profile-status p { margin:0; color:var(--muted); }
 .business-profile-actions { display:flex; flex-wrap:wrap; gap:12px; }
 .directory-heading-action { display:flex; align-items:center; justify-content:space-between; gap:24px; margin:32px 0 22px; padding:18px 20px; border:1px solid var(--line); }
@@ -522,6 +523,8 @@
 .directory-search label { display:grid; gap:8px; color:var(--gold-light); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
 .directory-search label.wide { grid-column:1/-1; }
 .directory-search input { width:100%; min-height:48px; padding:0 14px; border:1px solid var(--line); background:transparent; color:var(--cream); }
+.directory-search-actions { display:flex; align-items:stretch; gap:10px; }
+.directory-search-actions .button { white-space:nowrap; }
 .directory-result-count { margin:22px 0 12px; color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
 .business-directory-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
 .business-directory-card { display:flex; min-height:330px; flex-direction:column; padding:25px; border:1px solid var(--line); background:linear-gradient(145deg,rgba(185,154,98,.045),transparent 55%); }
@@ -687,6 +690,7 @@
   .business-directory-grid,.directory-search { grid-template-columns:1fr; }
   .directory-search label.wide { grid-column:auto; }
   .directory-heading-action,.business-profile-status { align-items:flex-start; flex-direction:column; }
+  .directory-search-actions { flex-direction:column; }
   .portal-shell,
   .member-page {
     padding-top: 42px;

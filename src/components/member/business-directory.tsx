@@ -22,13 +22,25 @@ export function BusinessDirectory({ initialResults }: { initialResults: Business
     setResults(data || []);
   }
 
+  async function clear(form: HTMLFormElement) {
+    form.reset();
+    setPending(true);
+    const { data, error } = await createClient().rpc("search_business_directory", { p_limit: 50 });
+    setPending(false);
+    if (error) return notify(error.message, "error");
+    setResults(data || []);
+  }
+
   return <div className="business-directory-workspace">
     <form className="directory-search" onSubmit={search}>
       <label className="wide">Search directory<input name="query" placeholder="Name, business, expertise or opportunity" /></label>
       <label>Industry<input name="industry" placeholder="e.g. Hospitality" /></label>
       <label>Role<input name="role" placeholder="e.g. Founder" /></label>
       <label>Interest<input name="interest" placeholder="e.g. Export" /></label>
-      <button className="button button-primary" disabled={pending}>{pending ? "Searching…" : "Search members"}</button>
+      <div className="directory-search-actions">
+        <button className="button button-primary" disabled={pending}>{pending ? "Searching…" : "Search members"}</button>
+        <button className="button button-secondary" type="button" disabled={pending} onClick={(event) => { if (event.currentTarget.form) void clear(event.currentTarget.form); }}>Clear filters</button>
+      </div>
     </form>
     <p className="directory-result-count">{results.length} {results.length === 1 ? "profile" : "profiles"}</p>
     <div className="business-directory-grid">{results.map((item) => <article className="business-directory-card" key={item.member_id}>
