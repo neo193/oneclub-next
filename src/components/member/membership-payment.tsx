@@ -43,7 +43,7 @@ export function MembershipPayment({ email, options }: { email: string; options:P
   return (
     <div className="membership-choice-grid">
       {!options.is_upgrade&&<article className="membership-choice"><p className="eyebrow compact">ANNUAL</p><h3>{money(options.annual_price_paise)}</h3><p>One year of membership and all standard benefits.</p><Button type="button" variant="secondary" disabled={pending} onClick={()=>pay("annual")}>Choose annual</Button></article>}
-      <article className="membership-choice featured"><p className="eyebrow compact">FOUNDING MEMBER</p><h3>{money(options.founding_payable_paise)}</h3><p>{options.is_upgrade?`${money(options.active_annual_credit_paise)} active-term credit applied. `:""}Lifetime membership and Founding Member events.</p><small>{options.founding_places_remaining} places remaining</small><Button type="button" variant="primary" disabled={pending||!options.founding_places_remaining} onClick={()=>pay("founding_lifetime")}>{options.is_upgrade?"Complete upgrade":"Choose Founding"}</Button></article>
+      <article className="membership-choice"><p className="eyebrow compact">FOUNDING MEMBER</p><h3>{money(options.founding_payable_paise)}</h3><p>{options.is_upgrade?`${money(options.active_annual_credit_paise)} active-term credit applied. `:""}Lifetime membership and Founding Member events.</p><small>{options.founding_places_remaining} places remaining</small><Button type="button" variant="secondary" disabled={pending||!options.founding_places_remaining} onClick={()=>pay("founding_lifetime")}>{options.is_upgrade?"Complete upgrade":"Choose Founding"}</Button></article>
     </div>
   );
 }
