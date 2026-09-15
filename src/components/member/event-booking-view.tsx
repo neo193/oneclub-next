@@ -243,6 +243,7 @@ export function EventBookingView({
               return (
                 <article className="member-event-card" key={eventItem.id}>
                   <p className="eyebrow compact">{formatDate(eventItem.starts_at)}</p>
+                  {eventItem.audience === "founding_members" && <span className="status-pill">Founding Members only</span>}
                   <h2>{eventItem.title}</h2>
                   <h3>{eventItem.venue}</h3>
                   <p>{eventItem.description}</p>
@@ -276,7 +277,7 @@ export function EventBookingView({
                   </div>
 
                   {/* Booking Form */}
-                  <form
+                  {!eventItem.can_book ? <p className="access-message">Booking is reserved for Founding Members.</p> : <form
                     className="event-reserve-form"
                     onSubmit={(e) => handleBookingSubmit(e, eventItem)}
                   >
@@ -340,7 +341,7 @@ export function EventBookingView({
                     >
                       {isFull ? "Event Full" : actionPending ? "Reserving…" : "Reserve Booking"}
                     </button>
-                  </form>
+                  </form>}
                 </article>
               );
             })
