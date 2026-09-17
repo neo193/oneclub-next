@@ -11,7 +11,7 @@
   --gold-light: #d1b77f;
   --line: rgba(215, 197, 163, 0.16);
   --line-strong: rgba(215, 197, 163, 0.3);
-  --max: 1220px;
+  --max: 1480px;
 }
 * {
   box-sizing: border-box;
@@ -1027,4 +1027,3 @@ h1 {
     width: 100%;
   }
 }
-
