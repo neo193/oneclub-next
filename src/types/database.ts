@@ -286,6 +286,10 @@ export type Database = {
           status: "draft" | "published" | "cancelled" | "completed"; booked_seats: number; held_seats: number; audience: "all_members" | "founding_members";
         }[];
       };
+      export_event_bookings_for_management: {
+        Args: { p_event_id: string };
+        Returns: EventBookingExportRow[];
+      };
       save_event: {
         Args: { p_id: string | null; p_title: string; p_description: string; p_venue: string; p_starts_at: string; p_booking_closes_at: string; p_refund_cutoff_at: string; p_capacity: number; p_price_paise: number; p_max_guests_per_member: number; p_pricing_model: string; p_status: string; p_capacity_change_reason?: string | null };
         Returns: string;
@@ -375,6 +379,11 @@ export type MembershipControl = {
   terms: { id: string; plan: string; source: string; status: string; starts_at: string; expires_at: string | null; amount_paise: number | null; payment_method: string | null; transaction_reference: string | null; payment_received_at: string | null; reason: string | null; created_at: string }[];
 };
 export type ManagedEvent = Database["public"]["Functions"]["list_events_for_management"]["Returns"][number];
+export type EventBookingExportRow = {
+  booking_id: string; member_number: string | null; member_name: string | null; member_email: string;
+  guest_names: string[]; seats: number; booking_status: string; payment_status: string;
+  booking_source: string; amount_paise: number; booked_at: string;
+};
 export type MembershipTierSlot={id?:string;display_slot:number;name?:string;price_paise?:number;validity_months?:number|null;allocation_limit?:number|null;allocated?:number;empty:boolean};
 export type ManagedMembershipTier={id:string;code:string;name:string;description:string;classification:"standard"|"premium";price_paise:number;validity_months:number|null;allocation_limit:number|null;allocated:number;status:"draft"|"published"|"sold_out"|"retired"|"archived";display_slot:number|null;upgrades_enabled:boolean;active_term_credit_enabled:boolean;published_at:string|null;retired_at:string|null;created_at:string};
 export type PurchasableMembershipTier={id:string;name:string;description:string;price_paise:number;validity_months:number|null;places_remaining:number|null;credit_paise?:number;payable_paise?:number};

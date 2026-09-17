@@ -370,13 +370,22 @@
 .membership-terms-next strong { font-size: 10px; font-weight: 500; }
 .event-management-grid-next { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(350px,.75fr); align-items: start; gap: 18px; margin-top: 18px; }
 .event-admin-list-next { display: grid; gap: 14px; }
-.event-admin-card-next { padding: 24px; border: 1px solid var(--line); border-left: 3px solid var(--muted-dark); background: rgba(255,255,255,.015); }
+.event-admin-card-next { position: relative; padding: 24px; border: 1px solid var(--line); border-left: 3px solid var(--muted-dark); background: rgba(255,255,255,.015); }
 .event-admin-card-next.event-state-published { border-left-color: #8fbd7c; }
 .event-admin-card-next.event-state-cancelled { border-left-color: #e78b78; }
 .event-admin-card-next h2 { margin: 9px 0 4px; font-size: 27px; }
 .event-admin-card-next p { margin: 0; color: var(--muted); font-size: 11px; }
 .event-admin-card-next small { display: block; margin-top: 8px; color: var(--muted-dark); font-size: 9px; line-height: 1.6; }
 .event-admin-card-next > div { display: flex; gap: 9px; margin-top: 20px; }
+.event-card-menu-next { position: absolute; top: 16px; right: 16px; z-index: 4; }
+.event-card-menu-next summary { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid var(--line); color: var(--muted); cursor: pointer; font-size: 15px; letter-spacing: 2px; list-style: none; }
+.event-card-menu-next summary::-webkit-details-marker { display: none; }
+.event-card-menu-next summary:hover,
+.event-card-menu-next summary:focus-visible { border-color: var(--gold); color: var(--cream); outline: none; }
+.event-card-menu-next > div { position: absolute; top: 44px; right: 0; min-width: 210px; margin: 0; padding: 6px; border: 1px solid var(--line-strong); background: var(--black-soft); box-shadow: 0 18px 45px rgba(0,0,0,.55); }
+.event-card-menu-next button { width: 100%; padding: 12px 14px; border: 0; background: transparent; color: var(--cream); cursor: pointer; font: inherit; font-size: 10px; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+.event-card-menu-next button:hover,
+.event-card-menu-next button:focus-visible { background: rgba(185,154,98,.11); color: var(--gold-light); outline: none; }
 .event-editor-next,
 .complimentary-panel-next { padding: 26px; border: 1px solid var(--line); background: rgba(255,255,255,.015); }
 .event-editor-next { position: sticky; top: 108px; }
