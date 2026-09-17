@@ -207,6 +207,17 @@
     12px var(--font-sans),
     sans-serif;
 }
+.member-primary-actions .button {
+  flex: 1 1 190px;
+}
+.member-primary-actions .button:hover,
+.member-primary-actions .button:focus-visible {
+  border-color: var(--cream);
+  background: var(--cream);
+  color: var(--black);
+  outline: none;
+  transform: translateY(-2px);
+}
 .benefits-search-next { width: 100%; }
 .benefits-filter p {
   justify-self: end;
@@ -641,6 +652,79 @@
   border: 1px solid rgba(209, 183, 127, 0.35);
   color: var(--gold-light);
   background: rgba(185, 154, 98, 0.06);
+}
+.member-ticket-panel {
+  margin-top: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.012);
+}
+.member-ticket-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.member-ticket-heading small,
+.member-ticket small {
+  display: block;
+  color: var(--muted-dark);
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.member-ticket-heading h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+}
+.member-ticket-heading > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  color: var(--gold-light);
+  font-size: 11px;
+}
+.member-ticket-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 15px;
+}
+.member-ticket {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px;
+  border-left: 2px solid var(--gold);
+  background: rgba(255, 255, 255, .018);
+}
+.member-ticket strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+.member-ticket > span {
+  color: var(--gold-light);
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.member-ticket-in_progress { border-left-color: #e6c75a; }
+.member-ticket-resolved { border-left-color: #8fbd7c; }
+.member-ticket-resolved > span { color: #8fbd7c; }
+.member-ticket-empty,
+.support-duplicate-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.support-duplicate-note {
+  padding: 12px 14px;
+  border-left: 2px solid var(--gold);
+  background: rgba(185,154,98,.06);
 }
 
 /* Authenticated member-area responsive layout */

@@ -15,11 +15,17 @@ export default async function MemberSupportPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userEmail = String(claimsData?.claims?.email || "");
+  const { data: activeTickets, error: ticketsError } = await supabase.rpc("list_my_support_requests");
 
   return (
     <section className="section member-page">
       <Suspense fallback={<p className="portal-loading">Loading support concierge…</p>}>
-        <MemberSupportForm profile={profile} userEmail={userEmail} />
+        <MemberSupportForm
+          profile={profile}
+          userEmail={userEmail}
+          initialTickets={activeTickets || []}
+          ticketsError={ticketsError?.message || ""}
+        />
       </Suspense>
     </section>
   );

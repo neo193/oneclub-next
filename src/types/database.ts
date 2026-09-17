@@ -164,6 +164,10 @@ export type Database = {
         Args: { p_category: string; p_message: string };
         Returns: string;
       };
+      list_my_support_requests: {
+        Args: Record<string, never>;
+        Returns: MemberSupportRequest[];
+      };
       get_account_deletion_eligibility: { Args: Record<string, never>; Returns: AccountDeletionEligibility };
       validate_account_deletion_support_context: { Args: { p_context: string }; Returns: boolean };
       consume_account_deletion_support_context: { Args: { p_context: string }; Returns: void };
@@ -314,6 +318,14 @@ export type MemberEvent = Database["public"]["Functions"]["get_member_events"]["
 export type MyEventBooking = Database["public"]["Functions"]["get_my_event_bookings"]["Returns"][number];
 export type StaffEnquiry = Database["public"]["Functions"]["list_enquiries_for_staff"]["Returns"][number];
 export type StaffSupportRequest = Database["public"]["Functions"]["list_support_requests_for_staff"]["Returns"][number];
+export type MemberSupportRequest = {
+  id: string;
+  category: string;
+  message: string;
+  status: "open" | "in_progress" | "resolved";
+  created_at: string;
+  updated_at: string;
+};
 export type AdminRefund = Database["public"]["Functions"]["list_refunds_for_admin"]["Returns"][number];
 export type ManagedMember = Database["public"]["Functions"]["list_members_for_management"]["Returns"][number];
 

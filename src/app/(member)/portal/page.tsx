@@ -75,8 +75,8 @@ export default async function MemberPortalPage({ searchParams }: { searchParams:
                 <p>
                   Use your digital member card when redeeming privileges with One Club partners, or reserve experiences and properties in advance.
                 </p>
-                <div className="portal-actions">
-                  <Button href="/portal/benefits" variant="primary">
+                <div className="portal-actions member-primary-actions">
+                  <Button href="/portal/benefits" variant="secondary">
                     Explore member benefits
                   </Button>
                   <Button href="/portal/events" variant="secondary">

@@ -1,18 +1,30 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast-provider";
-import type { Profile } from "@/types/database";
+import type { MemberSupportRequest, Profile } from "@/types/database";
+
+const friendly = (value: string) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+const statusLabel: Record<MemberSupportRequest["status"], string> = {
+  open: "Received",
+  in_progress: "In progress",
+  resolved: "Resolved",
+};
 
 export function MemberSupportForm({
   profile,
   userEmail,
+  initialTickets,
+  ticketsError,
 }: {
   profile: Profile;
   userEmail: string;
+  initialTickets: MemberSupportRequest[];
+  ticketsError: string;
 }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const deletionContext = searchParams.get("accountDeletion");
   const initialCategory = "membership_access";
@@ -26,6 +38,7 @@ export function MemberSupportForm({
   const [pending, setPending] = useState<boolean>(false);
   const [deletionEscalation, setDeletionEscalation] = useState(false);
   const { notify } = useToast();
+  const duplicateTicket = initialTickets.find((ticket) => ticket.category === category && ticket.status !== "resolved");
 
   useEffect(()=>{if(!deletionContext)return;void (async()=>{const {data}=await createClient().rpc("validate_account_deletion_support_context",{p_context:deletionContext});if(data){setDeletionEscalation(true);setCategory("account_deletion");setMessage("Please expedite the unresolved refund(s) so I can delete my account.\n\n");}})();},[deletionContext]);
 
@@ -47,6 +60,7 @@ export function MemberSupportForm({
       setStatusText(`Support request submitted. Reference: ${data || "Logged"}. Our team will respond shortly.`);
       notify("Support request submitted successfully.", "success");
       setMessage("");
+      router.refresh();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Could not submit your request. Please try again.";
       setStatusText(errorMessage);
@@ -79,6 +93,29 @@ export function MemberSupportForm({
             {profile.member_number || "Pending Member ID"} · {profile.membership_state.replace("_", " ")}
           </span>
         </div>
+
+        <section className="member-ticket-panel">
+          <div className="member-ticket-heading">
+            <div>
+              <small>Support progress</small>
+              <h3>Active tickets</h3>
+            </div>
+            <span>{initialTickets.length}</span>
+          </div>
+          {ticketsError ? <p className="member-ticket-empty">Ticket progress is temporarily unavailable.</p> : initialTickets.length ? (
+            <div className="member-ticket-list">
+              {initialTickets.map((ticket) => (
+                <article className={`member-ticket member-ticket-${ticket.status}`} key={ticket.id}>
+                  <div>
+                    <strong>{friendly(ticket.category)}</strong>
+                    <small>Updated {new Date(ticket.updated_at).toLocaleDateString()}</small>
+                  </div>
+                  <span>{statusLabel[ticket.status]}</span>
+                </article>
+              ))}
+            </div>
+          ) : <p className="member-ticket-empty">You have no active support tickets.</p>}
+        </section>
       </section>
 
       {/* Support Form */}
@@ -119,7 +156,8 @@ export function MemberSupportForm({
           />
         </label>
 
-        <button className="button button-primary" type="submit" disabled={pending}>
+        {duplicateTicket && <p className="support-duplicate-note">You already have a {statusLabel[duplicateTicket.status].toLowerCase()} ticket for this category. You can send another after it is resolved.</p>}
+        <button className="button button-primary" type="submit" disabled={pending || Boolean(duplicateTicket)}>
           {pending ? "Submitting…" : "Send Request"}
         </button>
 
@@ -130,5 +168,4 @@ export function MemberSupportForm({
     </div>
   );
 }
-
 
