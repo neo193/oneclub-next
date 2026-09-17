@@ -209,6 +209,8 @@
 }
 .member-primary-actions .button {
   flex: 1 1 190px;
+  padding-inline: 16px;
+  white-space: nowrap;
 }
 .member-primary-actions .button:hover,
 .member-primary-actions .button:focus-visible {
